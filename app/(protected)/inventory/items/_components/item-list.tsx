@@ -6,15 +6,19 @@ import { getCurrentPrice } from "@/lib/server/services/prices"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ListPagination } from "@/components/list-pagination"
+
+const PAGE_SIZE = 20
 
 interface ItemListProps {
   orgId: string
   search?: string
+  page?: number
 }
 
-export async function ItemList({ orgId, search }: ItemListProps) {
+export async function ItemList({ orgId, search, page = 1 }: ItemListProps) {
   const data = await listItems({
-    query: { search, limit: 50 },
+    query: { search, page, limit: PAGE_SIZE },
     orgId,
   })
 
@@ -46,47 +50,54 @@ export async function ItemList({ orgId, search }: ItemListProps) {
   }
 
   return (
-    <div className="grid gap-2">
-      {itemsWithPrices.map((item) => (
-        <Link key={item.id} href={`/inventory/items/${item.id}`}>
-          <Card className="transition-colors hover:bg-muted/50">
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                <HugeiconsIcon icon={DeliveryBox01Icon} strokeWidth={2} className="size-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-medium">{item.name}</p>
-                  {!item.is_active && (
-                    <Badge variant="secondary" className="text-[10px]">
-                      Inactive
-                    </Badge>
+    <div className="space-y-4">
+      <div className="grid gap-2">
+        {itemsWithPrices.map((item) => (
+          <Link key={item.id} href={`/inventory/items/${item.id}`}>
+            <Card className="transition-colors hover:bg-muted/50">
+              <CardContent className="flex items-center gap-4 p-4">
+                <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                  <HugeiconsIcon icon={DeliveryBox01Icon} strokeWidth={2} className="size-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="truncate text-sm font-medium">{item.name}</p>
+                    {!item.is_active && (
+                      <Badge variant="secondary" className="text-[10px]">
+                        Inactive
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {item.sku && <span>SKU: {item.sku}</span>}
+                    <span>Unit: {item.unit}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  {item.currentPrice ? (
+                    <>
+                      <p className="text-sm font-medium">
+                        {formatCurrency(item.currentPrice.unit_price)}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        per {item.unit}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No price set</p>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {item.sku && <span>SKU: {item.sku}</span>}
-                  <span>Unit: {item.unit}</span>
-                </div>
-              </div>
-              <div className="text-right">
-                {item.currentPrice ? (
-                  <>
-                    <p className="text-sm font-medium">
-                      {formatCurrency(item.currentPrice.unit_price)}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      per {item.unit}
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-xs text-muted-foreground">No price set</p>
-                )}
-              </div>
-              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
+                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+      <ListPagination
+        total={data.total}
+        pageSize={PAGE_SIZE}
+        currentPage={page}
+      />
     </div>
   )
 }

@@ -16,6 +16,8 @@ export default async function ExpensesPage({
     from?: string
     to?: string
     categoryId?: string
+    vendor?: string
+    page?: string
   }>
 }) {
   const session = await auth.api.getSession({
@@ -58,6 +60,8 @@ export default async function ExpensesPage({
           from={params.from}
           to={params.to}
           categoryId={params.categoryId}
+          vendor={params.vendor}
+          page={params.page ? parseInt(params.page, 10) : 1}
         />
       </Suspense>
     </div>

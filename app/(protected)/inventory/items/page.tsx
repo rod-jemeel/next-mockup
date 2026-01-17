@@ -3,12 +3,13 @@ import { redirect } from "next/navigation"
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 import { ItemList, ItemListSkeleton } from "./_components/item-list"
+import { ItemSearch } from "./_components/item-search"
 import { NewItemDialog } from "./_components/new-item-dialog"
 
 export default async function InventoryItemsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string }>
+  searchParams: Promise<{ search?: string; page?: string }>
 }) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -37,8 +38,14 @@ export default async function InventoryItemsPage({
         <NewItemDialog orgId={orgId} />
       </div>
 
+      <ItemSearch />
+
       <Suspense fallback={<ItemListSkeleton />}>
-        <ItemList orgId={orgId} search={params.search} />
+        <ItemList
+          orgId={orgId}
+          search={params.search}
+          page={params.page ? parseInt(params.page, 10) : 1}
+        />
       </Suspense>
     </div>
   )
