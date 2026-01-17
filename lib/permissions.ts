@@ -4,6 +4,10 @@ import {
   adminAc,
   memberAc,
 } from "better-auth/plugins/organization/access"
+import {
+  defaultStatements as adminDefaultStatements,
+  adminAc as adminPluginAc,
+} from "better-auth/plugins/admin/access"
 
 /**
  * Custom permission statements for this application.
@@ -73,11 +77,31 @@ export const viewer = ac.newRole({
 })
 
 /**
- * All roles for export to auth config
+ * All roles for export to auth config (organization plugin)
  */
 export const roles = {
   org_admin,
   finance,
   inventory,
   viewer,
+}
+
+/**
+ * Admin plugin access control - for user-level roles (not org roles)
+ */
+export const adminAcInstance = createAccessControl(adminDefaultStatements)
+
+/**
+ * superadmin: System-level admin with full control over all organizations
+ */
+export const superadmin = adminAcInstance.newRole({
+  ...adminPluginAc.statements,
+})
+
+/**
+ * Admin plugin roles - only superadmin is explicitly defined
+ * Users without a role get no admin permissions by default
+ */
+export const adminRoles = {
+  superadmin,
 }

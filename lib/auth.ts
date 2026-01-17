@@ -1,9 +1,9 @@
 import { betterAuth } from "better-auth"
 import { nextCookies } from "better-auth/next-js"
-import { organization } from "better-auth/plugins"
+import { admin, organization } from "better-auth/plugins"
 import { after } from "next/server"
 import { Pool } from "pg"
-import { ac, roles } from "./permissions"
+import { ac, roles, adminAcInstance, adminRoles } from "./permissions"
 
 export const auth = betterAuth({
   // Database: Supabase Postgres (use session pooler connection string)
@@ -62,6 +62,12 @@ export const auth = betterAuth({
         })
       },
       allowUserToCreateOrganization: true,
+    }),
+    // Admin plugin for superuser functionality
+    admin({
+      ac: adminAcInstance,
+      roles: adminRoles,
+      defaultRole: "user",
     }),
     // Required for Server Actions to set cookies - must be last
     nextCookies(),

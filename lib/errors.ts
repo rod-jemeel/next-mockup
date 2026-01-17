@@ -9,6 +9,7 @@ export const ERROR_CODES = {
   FORBIDDEN: { status: 403, message: "Access denied" },
   NOT_MEMBER: { status: 403, message: "Not a member of this organization" },
   ROLE_REQUIRED: { status: 403, message: "Insufficient role permissions" },
+  SUPERADMIN_REQUIRED: { status: 403, message: "Superadmin access required" },
 
   // Not Found (404)
   NOT_FOUND: { status: 404, message: "Resource not found" },

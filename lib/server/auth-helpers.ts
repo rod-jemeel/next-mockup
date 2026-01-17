@@ -3,6 +3,15 @@ import { ApiError } from "@/lib/errors"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
+type Session = Awaited<ReturnType<typeof auth.api.getSession>>
+
+/**
+ * Check if a user has superadmin role
+ */
+export function isSuperadmin(session: NonNullable<Session>): boolean {
+  return session.user.role === "superadmin"
+}
+
 /**
  * Get session or redirect to login (for Server Components)
  */
@@ -28,6 +37,20 @@ export async function getSessionOrApiError() {
 
   if (!session) {
     throw new ApiError("UNAUTHORIZED")
+  }
+
+  return session
+}
+
+/**
+ * Require superadmin access (for Route Handlers)
+ * Throws ApiError if user is not a superadmin
+ */
+export async function requireSuperadmin() {
+  const session = await getSessionOrApiError()
+
+  if (!isSuperadmin(session)) {
+    throw new ApiError("SUPERADMIN_REQUIRED")
   }
 
   return session
@@ -91,6 +114,7 @@ export async function requireRole(requiredRoles: string[]) {
 /**
  * Verify org access by orgId from URL params (for Route Handlers).
  * Unlike requireRole(), this takes the orgId directly instead of using activeOrganizationId.
+ * Superadmins bypass membership check and can access any organization.
  * @param orgId - Organization ID from URL params
  * @param requiredRoles - Optional array of role names (user needs at least one)
  */
@@ -108,6 +132,11 @@ export async function requireOrgAccess(
 
   if (!org) {
     throw new ApiError("ORG_NOT_FOUND")
+  }
+
+  // Superadmins bypass membership check
+  if (isSuperadmin(session)) {
+    return { session, org, membership: null, isSuperadmin: true }
   }
 
   // Verify user is a member
@@ -134,5 +163,5 @@ export async function requireOrgAccess(
     }
   }
 
-  return { session, org, membership }
+  return { session, org, membership, isSuperadmin: false }
 }
