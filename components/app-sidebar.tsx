@@ -12,6 +12,9 @@ import {
   Building03Icon,
   ArrowDown01Icon,
   Shield01Icon,
+  AiBrain01Icon,
+  UserMultiple02Icon,
+  Recycle01Icon,
 } from "@hugeicons/core-free-icons"
 import { authClient } from "@/lib/auth-client"
 import {
@@ -49,17 +52,37 @@ const mainNav = [
     icon: Invoice01Icon,
   },
   {
+    title: "Recurring",
+    href: "/expenses/recurring",
+    icon: Recycle01Icon,
+  },
+  {
     title: "Inventory",
     href: "/inventory/items",
     icon: DeliveryBox01Icon,
+  },
+  {
+    title: "AI Assistant",
+    href: "/ai",
+    icon: AiBrain01Icon,
   },
 ]
 
 const settingsNav = [
   {
+    title: "Organization",
+    href: "/settings/organization",
+    icon: Building03Icon,
+  },
+  {
     title: "Categories",
     href: "/settings/categories",
     icon: Settings01Icon,
+  },
+  {
+    title: "Members",
+    href: "/settings/members",
+    icon: UserMultiple02Icon,
   },
 ]
 
@@ -238,11 +261,22 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname.startsWith("/super")}
+                    isActive={pathname === "/super"}
                   >
                     <Link href="/super">
                       <HugeiconsIcon icon={Shield01Icon} strokeWidth={2} />
                       <span>Super Dashboard</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith("/super/organizations")}
+                  >
+                    <Link href="/super/organizations">
+                      <HugeiconsIcon icon={Building03Icon} strokeWidth={2} />
+                      <span>Organizations</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
