@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter, useSearchParams } from "next/navigation"
+import { useQueryState } from "nuqs"
 import useSWR from "swr"
 import { Filter, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,9 +15,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 
 interface ExpenseFiltersProps {
-  currentFrom?: string
-  currentTo?: string
-  currentCategoryId?: string
   orgId: string
 }
 
@@ -28,14 +25,10 @@ interface Category {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-export function ExpenseFilters({
-  currentFrom,
-  currentTo,
-  currentCategoryId,
-  orgId,
-}: ExpenseFiltersProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+export function ExpenseFilters({ orgId }: ExpenseFiltersProps) {
+  const [from, setFrom] = useQueryState("from")
+  const [to, setTo] = useQueryState("to")
+  const [categoryId, setCategoryId] = useQueryState("categoryId")
 
   const { data } = useSWR<{ data: { items: Category[] } }>(
     `/api/orgs/${orgId}/categories`,
@@ -43,21 +36,13 @@ export function ExpenseFilters({
   )
   const categories = data?.data?.items ?? []
 
-  const updateFilter = (key: string, value: string | undefined) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value) {
-      params.set(key, value)
-    } else {
-      params.delete(key)
-    }
-    router.push(`?${params.toString()}`)
-  }
-
   const clearFilters = () => {
-    router.push("/expenses")
+    setFrom(null)
+    setTo(null)
+    setCategoryId(null)
   }
 
-  const hasFilters = currentFrom || currentTo || currentCategoryId
+  const hasFilters = from || to || categoryId
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -69,26 +54,26 @@ export function ExpenseFilters({
       <Input
         type="date"
         placeholder="From"
-        value={currentFrom || ""}
-        onChange={(e) => updateFilter("from", e.target.value || undefined)}
+        value={from ?? ""}
+        onChange={(e) => setFrom(e.target.value || null)}
         className="h-7 w-auto"
       />
 
       <Input
         type="date"
         placeholder="To"
-        value={currentTo || ""}
-        onChange={(e) => updateFilter("to", e.target.value || undefined)}
+        value={to ?? ""}
+        onChange={(e) => setTo(e.target.value || null)}
         className="h-7 w-auto"
       />
 
       <Select
-        value={currentCategoryId ?? "all"}
+        value={categoryId ?? "all"}
         onValueChange={(value) => {
           if (!value || value === "all") {
-            updateFilter("categoryId", undefined)
+            setCategoryId(null)
           } else {
-            updateFilter("categoryId", value)
+            setCategoryId(value)
           }
         }}
       >

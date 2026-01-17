@@ -49,12 +49,7 @@ export default async function ExpensesPage({
         </Button>
       </div>
 
-      <ExpenseFilters
-        currentFrom={params.from}
-        currentTo={params.to}
-        currentCategoryId={params.categoryId}
-        orgId={orgId}
-      />
+      <ExpenseFilters orgId={orgId} />
 
       <Suspense fallback={<ExpenseListSkeleton />}>
         <ExpenseList
