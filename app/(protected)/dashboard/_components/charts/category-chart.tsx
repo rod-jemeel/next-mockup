@@ -49,6 +49,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
         data={chartData}
         xKey="name"
         yKey="amount"
+        yLabel="Total"
         height={220}
         formatYAxis={formatCurrency}
         formatTooltip={formatTooltip}

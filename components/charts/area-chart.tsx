@@ -82,15 +82,28 @@ export function AreaChart({
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: "hsl(var(--card))",
+            backgroundColor: "hsl(var(--popover))",
             border: "1px solid hsl(var(--border))",
-            borderRadius: "6px",
+            borderRadius: "8px",
+            padding: "8px 12px",
+            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+          }}
+          labelStyle={{
+            color: "hsl(var(--popover-foreground))",
+            fontWeight: 500,
+            marginBottom: "4px",
             fontSize: "12px",
+          }}
+          itemStyle={{
+            color: "hsl(var(--popover-foreground))",
+            fontSize: "12px",
+            padding: "2px 0",
           }}
           formatter={(value, name) => [
             formatTooltip(value as number),
             yLabels[name as string] || name,
           ]}
+          separator=": "
         />
         {yKeys.map((key, index) => (
           <Area
