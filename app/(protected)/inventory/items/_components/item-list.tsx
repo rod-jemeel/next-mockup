@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Package, ChevronRight } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { DeliveryBox01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { listItems } from "@/lib/server/services/inventory"
 import { getCurrentPrice } from "@/lib/server/services/prices"
 import { Card, CardContent } from "@/components/ui/card"
@@ -35,7 +36,7 @@ export async function ItemList({ orgId, search }: ItemListProps) {
   if (data.items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-        <Package className="mb-2 size-8 text-muted-foreground" />
+        <HugeiconsIcon icon={DeliveryBox01Icon} strokeWidth={2} className="mb-2 size-8 text-muted-foreground" />
         <p className="text-sm text-muted-foreground">No inventory items found</p>
         <p className="text-xs text-muted-foreground">
           Add your first item to start tracking prices
@@ -51,7 +52,7 @@ export async function ItemList({ orgId, search }: ItemListProps) {
           <Card className="transition-colors hover:bg-muted/50">
             <CardContent className="flex items-center gap-4 p-4">
               <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                <Package className="size-5 text-primary" />
+                <HugeiconsIcon icon={DeliveryBox01Icon} strokeWidth={2} className="size-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -81,7 +82,7 @@ export async function ItemList({ orgId, search }: ItemListProps) {
                   <p className="text-xs text-muted-foreground">No price set</p>
                 )}
               </div>
-              <ChevronRight className="size-4 text-muted-foreground" />
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4 text-muted-foreground" />
             </CardContent>
           </Card>
         </Link>

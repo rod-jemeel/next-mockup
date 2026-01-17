@@ -2,7 +2,8 @@ import { Suspense } from "react"
 import Link from "next/link"
 import { redirect, notFound } from "next/navigation"
 import { headers } from "next/headers"
-import { ArrowLeft, Package } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ArrowLeft01Icon, DeliveryBox01Icon } from "@hugeicons/core-free-icons"
 import { auth } from "@/lib/auth"
 import { getItem } from "@/lib/server/services/inventory"
 import { Button } from "@/components/ui/button"
@@ -43,11 +44,11 @@ export default async function ItemDetailPage({
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon-sm" asChild>
           <Link href="/inventory/items">
-            <ArrowLeft />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
           </Link>
         </Button>
         <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-          <Package className="size-5 text-primary" />
+          <HugeiconsIcon icon={DeliveryBox01Icon} strokeWidth={2} className="size-5 text-primary" />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">

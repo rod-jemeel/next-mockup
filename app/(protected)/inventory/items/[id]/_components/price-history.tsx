@@ -1,4 +1,5 @@
-import { TrendingUp, TrendingDown } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ArrowUp01Icon, ArrowDown01Icon } from "@hugeicons/core-free-icons"
 import { listPrices } from "@/lib/server/services/prices"
 import {
   Table,
@@ -100,9 +101,9 @@ export async function PriceHistory({ itemId, orgId, unit }: PriceHistoryProps) {
                     }`}
                   >
                     {price.change >= 0 ? (
-                      <TrendingUp className="size-3" />
+                      <HugeiconsIcon icon={ArrowUp01Icon} strokeWidth={2} className="size-3" />
                     ) : (
-                      <TrendingDown className="size-3" />
+                      <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="size-3" />
                     )}
                     <span>
                       {price.change >= 0 ? "+" : ""}

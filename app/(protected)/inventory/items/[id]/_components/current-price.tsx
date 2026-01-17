@@ -1,4 +1,5 @@
-import { TrendingUp, TrendingDown, DollarSign } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ArrowUp01Icon, ArrowDown01Icon, DollarCircleIcon } from "@hugeicons/core-free-icons"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getCurrentPrice, getPriceChange } from "@/lib/server/services/prices"
@@ -42,7 +43,7 @@ export async function CurrentPrice({ itemId, orgId, unit }: CurrentPriceProps) {
           <CardTitle className="text-xs font-medium text-muted-foreground">
             Current Price
           </CardTitle>
-          <DollarSign className="size-4 text-muted-foreground" />
+          <HugeiconsIcon icon={DollarCircleIcon} strokeWidth={2} className="size-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           {price ? (
@@ -68,9 +69,9 @@ export async function CurrentPrice({ itemId, orgId, unit }: CurrentPriceProps) {
           </CardTitle>
           {priceChange && priceChange.percentChange !== null && (
             priceChange.percentChange >= 0 ? (
-              <TrendingUp className="size-4 text-destructive" />
+              <HugeiconsIcon icon={ArrowUp01Icon} strokeWidth={2} className="size-4 text-destructive" />
             ) : (
-              <TrendingDown className="size-4 text-green-500" />
+              <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="size-4 text-green-500" />
             )
           )}
         </CardHeader>

@@ -1,10 +1,7 @@
 import { Suspense } from "react"
-import Link from "next/link"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
-import { Plus } from "lucide-react"
 import { auth } from "@/lib/auth"
-import { Button } from "@/components/ui/button"
 import { ItemList, ItemListSkeleton } from "./_components/item-list"
 import { NewItemDialog } from "./_components/new-item-dialog"
 
