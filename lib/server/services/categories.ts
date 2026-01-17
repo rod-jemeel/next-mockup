@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { supabase } from "@/lib/server/db"
 import type {
   CreateCategoryInput,
@@ -13,7 +14,11 @@ export interface Category {
   created_at: string
 }
 
-export async function listCategories({
+/**
+ * List categories for an organization
+ * Uses React.cache() for per-request deduplication (server-cache-react rule)
+ */
+export const listCategories = cache(async function listCategories({
   orgId,
   query,
 }: {
@@ -38,7 +43,7 @@ export async function listCategories({
     items: data || [],
     total: count || 0,
   }
-}
+})
 
 export async function getCategory({
   categoryId,

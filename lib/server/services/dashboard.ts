@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { supabase } from "@/lib/server/db"
 import { ApiError } from "@/lib/errors"
 
@@ -30,9 +31,10 @@ interface DashboardData {
 
 /**
  * Get dashboard data for a specific month
+ * Uses React.cache() for per-request deduplication (server-cache-react rule)
  * Uses parallel fetching for independent operations (async-api-routes rule)
  */
-export async function getDashboard(data: {
+export const getDashboard = cache(async function getDashboard(data: {
   month: string // YYYY-MM format
   compare?: "prev" | "none"
   orgId: string
@@ -150,7 +152,7 @@ export async function getDashboard(data: {
     topDrivers,
     inventoryMovers,
   }
-}
+})
 
 /**
  * Get inventory items with biggest price changes in a date range
