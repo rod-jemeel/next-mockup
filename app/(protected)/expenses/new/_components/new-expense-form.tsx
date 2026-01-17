@@ -55,8 +55,8 @@ export function NewExpenseForm({ orgId }: NewExpenseFormProps) {
     fetch(`/api/orgs/${orgId}/categories`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.data) {
-          setCategories(data.data)
+        if (data.data?.items) {
+          setCategories(data.data.items)
         }
       })
       .catch(console.error)
@@ -160,7 +160,9 @@ export function NewExpenseForm({ orgId }: NewExpenseFormProps) {
                 required
               >
                 <SelectTrigger id="categoryId">
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder="Select a category">
+                    {categories.find((c) => c.id === formData.categoryId)?.name}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
