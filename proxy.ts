@@ -21,8 +21,12 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Protected routes
+    // Protected routes - all routes under (protected) group
     "/dashboard/:path*",
     "/settings/:path*",
+    "/expenses/:path*",
+    "/inventory/:path*",
+    "/super/:path*",
+    "/org/select",
   ],
 }
