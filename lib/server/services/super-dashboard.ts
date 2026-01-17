@@ -1,4 +1,5 @@
 import { cache } from "react"
+import { connection } from "next/server"
 import { supabase } from "@/lib/server/db"
 import { ApiError } from "@/lib/errors"
 
@@ -58,6 +59,9 @@ interface SuperDashboardData {
 export const getAllOrganizations = cache(async function getAllOrganizations(): Promise<
   OrganizationSummary[]
 > {
+  // Mark as dynamic - needed before accessing new Date()
+  await connection()
+
   // Get current month for expense calculations
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
