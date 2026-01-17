@@ -8,6 +8,17 @@ import { createExpense, listExpenses } from "@/lib/server/services/expenses"
 type RouteContext = { params: Promise<{ orgId: string }> }
 
 /**
+ * Get the default tax rate from organization metadata
+ */
+function getOrgDefaultTaxRate(org: { metadata?: unknown }): number {
+  const metadata = org.metadata as Record<string, unknown> | undefined
+  if (metadata && typeof metadata.defaultTaxRate === "number") {
+    return metadata.defaultTaxRate
+  }
+  return 0
+}
+
+/**
  * POST /api/orgs/:orgId/expenses
  * Create a new expense
  * Roles: org_admin, finance
@@ -27,10 +38,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return validationError(result.error.issues).toResponse()
     }
 
+    // Get organization's default tax rate
+    const defaultTaxRate = getOrgDefaultTaxRate(org)
+
     const expense = await createExpense({
       input: result.data,
       orgId: org.id,
       userId: session.user.id,
+      defaultTaxRate,
     })
 
     return Response.json({ data: expense }, { status: 201 })

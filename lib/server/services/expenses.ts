@@ -13,9 +13,13 @@ interface ExpenseRow {
   org_id: string
   expense_date: string
   category_id: string
-  amount: number
+  amount: number // Total amount (pre_tax + tax)
+  amount_pre_tax: number
+  tax_amount: number
+  effective_tax_rate: number | null
   vendor: string | null
   notes: string | null
+  recurring_template_id: string | null
   created_by: string
   created_at: string
 }
@@ -25,14 +29,64 @@ interface ExpenseWithCategory extends ExpenseRow {
 }
 
 /**
+ * Calculate tax breakdown from total amount
+ * @param totalAmount - Total amount paid (including tax)
+ * @param taxAmount - Tax amount (if provided, otherwise calculated from rate)
+ * @param defaultTaxRate - Organization's default tax rate (e.g., 0.0825 for 8.25%)
+ */
+function calculateTaxBreakdown(
+  totalAmount: number,
+  taxAmount?: number,
+  defaultTaxRate: number = 0
+): { amountPreTax: number; taxAmount: number; effectiveTaxRate: number } {
+  // If tax amount is explicitly provided, use it
+  if (taxAmount !== undefined && taxAmount >= 0) {
+    const amountPreTax = Math.round((totalAmount - taxAmount) * 100) / 100
+    const effectiveTaxRate =
+      amountPreTax > 0
+        ? Math.round((taxAmount / amountPreTax) * 10000) / 10000
+        : 0
+    return { amountPreTax, taxAmount, effectiveTaxRate }
+  }
+
+  // Calculate using default tax rate
+  // If total = pre_tax * (1 + rate), then pre_tax = total / (1 + rate)
+  if (defaultTaxRate > 0) {
+    const amountPreTax =
+      Math.round((totalAmount / (1 + defaultTaxRate)) * 100) / 100
+    const calculatedTax = Math.round((totalAmount - amountPreTax) * 100) / 100
+    return {
+      amountPreTax,
+      taxAmount: calculatedTax,
+      effectiveTaxRate: defaultTaxRate,
+    }
+  }
+
+  // No tax
+  return {
+    amountPreTax: totalAmount,
+    taxAmount: 0,
+    effectiveTaxRate: 0,
+  }
+}
+
+/**
  * Create a new expense
  */
 export async function createExpense(data: {
   input: CreateExpenseInput
   orgId: string
   userId: string
+  defaultTaxRate?: number
 }) {
-  const { input, orgId, userId } = data
+  const { input, orgId, userId, defaultTaxRate = 0 } = data
+
+  // Calculate tax breakdown
+  const { amountPreTax, taxAmount, effectiveTaxRate } = calculateTaxBreakdown(
+    input.totalAmount,
+    input.taxAmount,
+    defaultTaxRate
+  )
 
   const { data: expense, error } = await supabase
     .from("expenses")
@@ -40,9 +94,13 @@ export async function createExpense(data: {
       org_id: orgId,
       expense_date: input.expenseDate,
       category_id: input.categoryId,
-      amount: input.amount,
+      amount: input.totalAmount, // Total amount
+      amount_pre_tax: amountPreTax,
+      tax_amount: taxAmount,
+      effective_tax_rate: effectiveTaxRate,
       vendor: input.vendor ?? null,
       notes: input.notes ?? null,
+      recurring_template_id: input.recurringTemplateId ?? null,
       created_by: userId,
     })
     .select()
@@ -74,7 +132,9 @@ export async function createExpense(data: {
   logCreate(orgId, userId, "expense", expense.id, {
     expense_date: input.expenseDate,
     category_id: input.categoryId,
-    amount: input.amount,
+    amount: input.totalAmount,
+    amount_pre_tax: amountPreTax,
+    tax_amount: taxAmount,
     vendor: input.vendor,
   })
 
@@ -186,10 +246,11 @@ export async function updateExpense(data: {
   orgId: string
   userId: string
   input: UpdateExpenseInput
+  defaultTaxRate?: number
 }) {
-  const { expenseId, orgId, userId, input } = data
+  const { expenseId, orgId, userId, input, defaultTaxRate = 0 } = data
 
-  // Get current expense for audit log
+  // Get current expense for audit log and tax calculation
   const { data: oldExpense } = await supabase
     .from("expenses")
     .select("*")
@@ -201,9 +262,29 @@ export async function updateExpense(data: {
   const updateData: Record<string, unknown> = {}
   if (input.expenseDate !== undefined) updateData.expense_date = input.expenseDate
   if (input.categoryId !== undefined) updateData.category_id = input.categoryId
-  if (input.amount !== undefined) updateData.amount = input.amount
   if (input.vendor !== undefined) updateData.vendor = input.vendor
   if (input.notes !== undefined) updateData.notes = input.notes
+
+  // Handle amount and tax updates
+  if (input.totalAmount !== undefined || input.taxAmount !== undefined) {
+    // Use new total or existing total
+    const totalAmount = input.totalAmount ?? oldExpense?.amount ?? 0
+    // Use new tax or existing tax (if only tax is being updated)
+    const taxAmount =
+      input.taxAmount !== undefined
+        ? input.taxAmount
+        : input.totalAmount !== undefined
+          ? undefined // Recalculate if total changed but no explicit tax
+          : oldExpense?.tax_amount
+
+    const { amountPreTax, taxAmount: calculatedTax, effectiveTaxRate } =
+      calculateTaxBreakdown(totalAmount, taxAmount, defaultTaxRate)
+
+    updateData.amount = totalAmount
+    updateData.amount_pre_tax = amountPreTax
+    updateData.tax_amount = calculatedTax
+    updateData.effective_tax_rate = effectiveTaxRate
+  }
 
   if (Object.keys(updateData).length === 0 && !input.tagIds) {
     throw new ApiError("VALIDATION_ERROR", "No fields to update")
@@ -251,6 +332,8 @@ export async function updateExpense(data: {
       expense_date: updatedExpense.expense_date,
       category_id: updatedExpense.category_id,
       amount: updatedExpense.amount,
+      amount_pre_tax: updatedExpense.amount_pre_tax,
+      tax_amount: updatedExpense.tax_amount,
       vendor: updatedExpense.vendor,
     })
   }

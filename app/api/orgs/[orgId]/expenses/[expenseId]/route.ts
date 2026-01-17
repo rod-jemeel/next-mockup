@@ -11,6 +11,17 @@ import {
 type RouteContext = { params: Promise<{ orgId: string; expenseId: string }> }
 
 /**
+ * Get the default tax rate from organization metadata
+ */
+function getOrgDefaultTaxRate(org: { metadata?: unknown }): number {
+  const metadata = org.metadata as Record<string, unknown> | undefined
+  if (metadata && typeof metadata.defaultTaxRate === "number") {
+    return metadata.defaultTaxRate
+  }
+  return 0
+}
+
+/**
  * GET /api/orgs/:orgId/expenses/:expenseId
  * Get a single expense
  * Roles: any member
@@ -48,11 +59,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return validationError(result.error.issues).toResponse()
     }
 
+    // Get organization's default tax rate
+    const defaultTaxRate = getOrgDefaultTaxRate(org)
+
     const expense = await updateExpense({
       expenseId,
       orgId: org.id,
       userId: session.user.id,
       input: result.data,
+      defaultTaxRate,
     })
 
     return Response.json({ data: expense })

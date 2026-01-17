@@ -8,15 +8,28 @@ import {
 } from "./common"
 
 /**
+ * Tax amount schema - can be 0 or positive
+ */
+const taxAmountSchema = z.coerce
+  .number()
+  .min(0, "Tax amount cannot be negative")
+  .multipleOf(0.01, "Tax amount must have at most 2 decimal places")
+
+/**
  * Create expense request body
+ * User enters totalAmount (what they paid)
+ * taxAmount is auto-calculated from org default rate or user-adjusted
+ * Server calculates: amountPreTax, effectiveTaxRate
  */
 export const createExpenseSchema = z.object({
   expenseDate: dateSchema,
   categoryId: uuidSchema,
-  amount: amountSchema,
+  totalAmount: amountSchema, // User enters total (what they paid)
+  taxAmount: taxAmountSchema.optional(), // Auto-calc or user override
   vendor: z.string().max(255).optional(),
   notes: z.string().max(1000).optional(),
   tagIds: z.array(uuidSchema).max(10).optional(),
+  recurringTemplateId: uuidSchema.optional(),
 })
 
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>
@@ -27,7 +40,8 @@ export type CreateExpenseInput = z.infer<typeof createExpenseSchema>
 export const updateExpenseSchema = z.object({
   expenseDate: dateSchema.optional(),
   categoryId: uuidSchema.optional(),
-  amount: amountSchema.optional(),
+  totalAmount: amountSchema.optional(), // Update total amount
+  taxAmount: taxAmountSchema.optional(), // Update tax amount
   vendor: z.string().max(255).nullable().optional(),
   notes: z.string().max(1000).nullable().optional(),
   tagIds: z.array(uuidSchema).max(10).optional(),
