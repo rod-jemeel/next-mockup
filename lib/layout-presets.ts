@@ -2,21 +2,32 @@
  * Dashboard Layout Presets
  *
  * Defines configurable grid layouts for the dashboard overview tab.
- * Each preset specifies slots for KPIs and charts with their sizes.
+ * Each preset specifies slots for KPIs, charts, and tables with their sizes.
  */
 
 import {
   KpiWidgetId,
   ChartWidgetId,
+  TableWidgetId,
   DEFAULT_ORG_KPIS,
   DEFAULT_ORG_CHARTS,
+  DEFAULT_ORG_TABLES,
   DEFAULT_SUPER_KPIS,
   DEFAULT_SUPER_CHARTS,
+  DEFAULT_SUPER_TABLES,
 } from "./widget-registry"
 
-export type LayoutPreset = "balanced" | "kpi-focused" | "chart-focused"
-export type SlotType = "kpi" | "chart"
-export type SlotSize = "sm" | "md" | "lg" | "full"
+export type LayoutPreset =
+  | "balanced"
+  | "kpi-focused"
+  | "chart-focused"
+  | "table-focused"
+  | "detailed"
+  | "minimal"
+  | "comparison"
+
+export type SlotType = "kpi" | "chart" | "table"
+export type SlotSize = "sm" | "md" | "lg" | "full" | "half"
 
 export interface LayoutSlot {
   id: string
@@ -36,6 +47,10 @@ export interface LayoutConfig {
  * balanced: 4 KPIs in a row + 2 side-by-side charts (default)
  * kpi-focused: 6 KPIs in a grid + 1 full-width chart
  * chart-focused: 2 KPIs + 3 charts in various sizes
+ * table-focused: 2 KPIs + 1 chart + 1 table (data-centric view)
+ * detailed: 4 KPIs + 1 chart + 1 table (comprehensive view)
+ * minimal: 2 KPIs + 1 chart (simple, clean view)
+ * comparison: 2 KPIs + 2 side-by-side charts (compare metrics)
  */
 export const LAYOUT_PRESETS: Record<LayoutPreset, LayoutConfig> = {
   balanced: {
@@ -74,6 +89,47 @@ export const LAYOUT_PRESETS: Record<LayoutPreset, LayoutConfig> = {
       { id: "chart-3", type: "chart", size: "md" },
     ],
   },
+  "table-focused": {
+    label: "Table Focused",
+    description: "2 KPIs + 1 chart + 1 table",
+    slots: [
+      { id: "kpi-1", type: "kpi", size: "sm" },
+      { id: "kpi-2", type: "kpi", size: "sm" },
+      { id: "chart-1", type: "chart", size: "full" },
+      { id: "table-1", type: "table", size: "full" },
+    ],
+  },
+  detailed: {
+    label: "Detailed",
+    description: "4 KPIs + 1 chart + 1 table",
+    slots: [
+      { id: "kpi-1", type: "kpi", size: "sm" },
+      { id: "kpi-2", type: "kpi", size: "sm" },
+      { id: "kpi-3", type: "kpi", size: "sm" },
+      { id: "kpi-4", type: "kpi", size: "sm" },
+      { id: "chart-1", type: "chart", size: "full" },
+      { id: "table-1", type: "table", size: "full" },
+    ],
+  },
+  minimal: {
+    label: "Minimal",
+    description: "2 KPIs + 1 chart",
+    slots: [
+      { id: "kpi-1", type: "kpi", size: "sm" },
+      { id: "kpi-2", type: "kpi", size: "sm" },
+      { id: "chart-1", type: "chart", size: "full" },
+    ],
+  },
+  comparison: {
+    label: "Comparison",
+    description: "2 KPIs + 2 side-by-side charts",
+    slots: [
+      { id: "kpi-1", type: "kpi", size: "sm" },
+      { id: "kpi-2", type: "kpi", size: "sm" },
+      { id: "chart-1", type: "chart", size: "half" },
+      { id: "chart-2", type: "chart", size: "half" },
+    ],
+  },
 }
 
 /**
@@ -98,20 +154,26 @@ export function getDefaultWidgetAssignments(
   const config = LAYOUT_PRESETS[layout]
   const defaultKpis = variant === "org" ? DEFAULT_ORG_KPIS : DEFAULT_SUPER_KPIS
   const defaultCharts = variant === "org" ? DEFAULT_ORG_CHARTS : DEFAULT_SUPER_CHARTS
+  const defaultTables = variant === "org" ? DEFAULT_ORG_TABLES : DEFAULT_SUPER_TABLES
 
   const assignments: Record<string, string> = {}
   let kpiIndex = 0
   let chartIndex = 0
+  let tableIndex = 0
 
   for (const slot of config.slots) {
     if (slot.type === "kpi") {
       // Cycle through available KPIs
       assignments[slot.id] = defaultKpis[kpiIndex % defaultKpis.length]
       kpiIndex++
-    } else {
+    } else if (slot.type === "chart") {
       // Cycle through available charts
       assignments[slot.id] = defaultCharts[chartIndex % defaultCharts.length]
       chartIndex++
+    } else if (slot.type === "table") {
+      // Cycle through available tables
+      assignments[slot.id] = defaultTables[tableIndex % defaultTables.length]
+      tableIndex++
     }
   }
 
@@ -199,16 +261,18 @@ export function validatePreferences(
 }
 
 /**
- * Get the count of KPI slots and chart slots in a layout
+ * Get the count of KPI slots, chart slots, and table slots in a layout
  */
 export function getLayoutSlotCounts(layout: LayoutPreset): {
   kpiCount: number
   chartCount: number
+  tableCount: number
 } {
   const config = LAYOUT_PRESETS[layout]
   return {
     kpiCount: config.slots.filter((s) => s.type === "kpi").length,
     chartCount: config.slots.filter((s) => s.type === "chart").length,
+    tableCount: config.slots.filter((s) => s.type === "table").length,
   }
 }
 
@@ -253,4 +317,13 @@ export function getChartWidgetsFromPreferences(
   prefs: DashboardPreferences
 ): ChartWidgetId[] {
   return getWidgetsFromPreferences(prefs, "chart") as ChartWidgetId[]
+}
+
+/**
+ * Get table widget IDs from preferences
+ */
+export function getTableWidgetsFromPreferences(
+  prefs: DashboardPreferences
+): TableWidgetId[] {
+  return getWidgetsFromPreferences(prefs, "table") as TableWidgetId[]
 }

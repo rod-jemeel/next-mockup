@@ -61,8 +61,8 @@ export function DashboardClient({
 
   const topCategory = dashboardData.topDrivers[0]?.categoryName ?? null
 
-  // Find top increase and decrease
-  const sortedMovers = [...dashboardData.inventoryMovers].sort(
+  // Find top increase and decrease (using toSorted for immutability)
+  const sortedMovers = dashboardData.inventoryMovers.toSorted(
     (a, b) => b.percentChange - a.percentChange
   )
   const topIncrease = sortedMovers.find((m) => m.percentChange > 0)
@@ -82,7 +82,7 @@ export function DashboardClient({
   }
 
   // Trends (only expense-related have MoM)
-  const trends: Record<KpiId, number | null> = {
+  const trends = {
     total_expenses: dashboardData.momChange,
     expense_count: null,
     avg_expense: null,

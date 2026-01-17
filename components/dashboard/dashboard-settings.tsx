@@ -81,16 +81,20 @@ export function DashboardSettings({ orgId, variant = "org" }: DashboardSettingsP
     const availableKpis = variant === "org" ? getOrgAvailableKpis() : getAllKpis()
     const availableCharts = variant === "org" ? getOrgAvailableCharts() : getAllCharts()
 
-    // Try to carry over existing widgets where possible
-    const existingKpiWidgets = currentSlots
-      .filter((s) => s.type === "kpi")
-      .map((s) => editedPrefs.overview.widgets[s.id])
-      .filter((w): w is string => Boolean(w))
+    // Try to carry over existing widgets where possible (combined into single loop)
+    const existingKpiWidgets: string[] = []
+    const existingChartWidgets: string[] = []
 
-    const existingChartWidgets = currentSlots
-      .filter((s) => s.type === "chart")
-      .map((s) => editedPrefs.overview.widgets[s.id])
-      .filter((w): w is string => Boolean(w))
+    for (const slot of currentSlots) {
+      const widget = editedPrefs.overview.widgets[slot.id]
+      if (widget) {
+        if (slot.type === "kpi") {
+          existingKpiWidgets.push(widget)
+        } else if (slot.type === "chart") {
+          existingChartWidgets.push(widget)
+        }
+      }
+    }
 
     let kpiIndex = 0
     let chartIndex = 0

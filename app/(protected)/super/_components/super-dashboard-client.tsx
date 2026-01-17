@@ -75,8 +75,8 @@ export function SuperDashboardClient({
         )
       : 0
 
-  // Find top increase and decrease
-  const sortedMovers = [...dashboardData.topPriceMovers].sort(
+  // Find top increase and decrease (using toSorted for immutability)
+  const sortedMovers = dashboardData.topPriceMovers.toSorted(
     (a, b) => b.changePercent - a.changePercent
   )
   const topIncrease = sortedMovers.find((m) => m.changePercent > 0)
