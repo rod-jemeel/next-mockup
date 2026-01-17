@@ -3,9 +3,69 @@ import { redirect } from "next/navigation"
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 import { MonthPicker } from "./_components/month-picker"
-import { ExpenseSummary, ExpenseSummarySkeleton } from "./_components/expense-summary"
-import { CategoryBreakdown, CategoryBreakdownSkeleton } from "./_components/category-breakdown"
-import { InventoryMovers, InventoryMoversSkeleton } from "./_components/inventory-movers"
+import { DashboardClient } from "./_components/dashboard-client"
+import { getDashboard, getDashboardHistorical } from "@/lib/server/services/dashboard"
+import { supabase } from "@/lib/server/db"
+import { Skeleton } from "@/components/ui/skeleton"
+
+async function DashboardContent({
+  orgId,
+  month,
+}: {
+  orgId: string
+  month: string
+}) {
+  // Fetch all data in parallel
+  const [dashboardData, historicalData, itemsResult] = await Promise.all([
+    getDashboard({ month, compare: "prev", orgId }),
+    getDashboardHistorical({ orgId }),
+    supabase
+      .from("inventory_items")
+      .select("id", { count: "exact", head: true })
+      .eq("org_id", orgId)
+      .eq("is_active", true),
+  ])
+
+  const inventoryItemCount = itemsResult.count ?? 0
+
+  return (
+    <DashboardClient
+      orgId={orgId}
+      dashboardData={dashboardData}
+      historicalData={historicalData}
+      inventoryItemCount={inventoryItemCount}
+    />
+  )
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Tab skeleton */}
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-9 w-24" />
+      </div>
+
+      {/* KPI cards skeleton */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="rounded-lg border border-border bg-card p-4">
+            <Skeleton className="h-4 w-24 mb-2" />
+            <Skeleton className="h-8 w-32" />
+          </div>
+        ))}
+      </div>
+
+      {/* Chart skeleton */}
+      <div className="rounded-lg border border-border bg-card p-4">
+        <Skeleton className="h-4 w-32 mb-2" />
+        <Skeleton className="h-[200px] w-full" />
+      </div>
+    </div>
+  )
+}
 
 export default async function DashboardPage({
   searchParams,
@@ -40,21 +100,9 @@ export default async function DashboardPage({
         <MonthPicker currentMonth={currentMonth} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Suspense fallback={<ExpenseSummarySkeleton />}>
-          <ExpenseSummary orgId={orgId} month={currentMonth} />
-        </Suspense>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Suspense fallback={<CategoryBreakdownSkeleton />}>
-          <CategoryBreakdown orgId={orgId} month={currentMonth} />
-        </Suspense>
-
-        <Suspense fallback={<InventoryMoversSkeleton />}>
-          <InventoryMovers orgId={orgId} month={currentMonth} />
-        </Suspense>
-      </div>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardContent orgId={orgId} month={currentMonth} />
+      </Suspense>
     </div>
   )
 }

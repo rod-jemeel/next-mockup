@@ -228,3 +228,101 @@ async function getInventoryMovers(data: {
     .sort((a, b) => Math.abs(b.percentChange) - Math.abs(a.percentChange))
     .slice(0, 10)
 }
+
+interface HistoricalDataPoint {
+  month: string // YYYY-MM format
+  label: string // Display label (e.g., "Jan")
+  totalExpenses: number
+  expenseCount: number
+  inventoryItems: number
+  priceUpdates: number
+}
+
+/**
+ * Get historical dashboard data for trend charts (last 6 months)
+ * Uses React.cache() for per-request deduplication
+ */
+export const getDashboardHistorical = cache(async function getDashboardHistorical(data: {
+  orgId: string
+  months?: number // Number of months to fetch (default 6)
+}): Promise<HistoricalDataPoint[]> {
+  const { orgId, months = 6 } = data
+
+  // Generate month ranges
+  const now = new Date()
+  const monthRanges: Array<{
+    month: string
+    label: string
+    startDate: string
+    endDate: string
+  }> = []
+
+  for (let i = months - 1; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+    const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+    const label = date.toLocaleString("en-US", { month: "short" })
+
+    monthRanges.push({
+      month: monthStr,
+      label,
+      startDate: date.toISOString().split("T")[0],
+      endDate: endDate.toISOString().split("T")[0],
+    })
+  }
+
+  // Get first and last date range
+  const firstStart = monthRanges[0].startDate
+  const lastEnd = monthRanges[monthRanges.length - 1].endDate
+
+  // Fetch all expenses and inventory data in the date range
+  const [expensesResult, itemsResult, priceHistoryResult] = await Promise.all([
+    supabase
+      .from("expenses")
+      .select("id, amount, expense_date")
+      .eq("org_id", orgId)
+      .gte("expense_date", firstStart)
+      .lte("expense_date", lastEnd),
+    supabase
+      .from("inventory_items")
+      .select("id, created_at")
+      .eq("org_id", orgId)
+      .eq("is_active", true),
+    supabase
+      .from("inventory_price_history")
+      .select("id, effective_at")
+      .eq("org_id", orgId)
+      .gte("effective_at", firstStart + "T00:00:00Z")
+      .lte("effective_at", lastEnd + "T23:59:59Z"),
+  ])
+
+  const expenses = expensesResult.data || []
+  const items = itemsResult.data || []
+  const priceHistory = priceHistoryResult.data || []
+
+  // Aggregate by month
+  const result: HistoricalDataPoint[] = monthRanges.map(({ month, label, startDate, endDate }) => {
+    // Filter expenses for this month
+    const monthExpenses = expenses.filter((e) => {
+      const date = e.expense_date
+      return date >= startDate && date <= endDate
+    })
+
+    // Filter price updates for this month
+    const monthPriceUpdates = priceHistory.filter((p) => {
+      const date = p.effective_at.split("T")[0]
+      return date >= startDate && date <= endDate
+    })
+
+    return {
+      month,
+      label,
+      totalExpenses: monthExpenses.reduce((sum, e) => sum + Number(e.amount), 0),
+      expenseCount: monthExpenses.length,
+      inventoryItems: items.length, // Total items (doesn't change much month-to-month)
+      priceUpdates: monthPriceUpdates.length,
+    }
+  })
+
+  return result
+})
