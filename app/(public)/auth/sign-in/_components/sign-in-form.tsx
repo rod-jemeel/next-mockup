@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Info } from "lucide-react"
 import { signIn } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -11,7 +12,19 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input"
 import { signInSchema, type SignInSchema } from "../_schemas/sign-in.schema"
 
-export function SignInForm({ className, ...props }: React.ComponentProps<"div">) {
+const MESSAGE_MAP: Record<string, { title: string; description: string }> = {
+  signup_disabled: {
+    title: "Invite-only access",
+    description:
+      "Public signup is disabled. You must be invited by an organization to join.",
+  },
+}
+
+interface SignInFormProps extends React.ComponentProps<"div"> {
+  message?: string
+}
+
+export function SignInForm({ className, message, ...props }: SignInFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,8 +56,21 @@ export function SignInForm({ className, ...props }: React.ComponentProps<"div">)
     })
   }
 
+  const messageContent = message ? MESSAGE_MAP[message] : null
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
+      {messageContent && (
+        <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium">{messageContent.title}</p>
+            <p className="text-xs/relaxed text-muted-foreground">
+              {messageContent.description}
+            </p>
+          </div>
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
@@ -98,12 +124,6 @@ export function SignInForm({ className, ...props }: React.ComponentProps<"div">)
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Signing in..." : "Login"}
                 </Button>
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account?{" "}
-                  <Link href="/auth/sign-up" className="underline underline-offset-4 hover:text-primary">
-                    Sign up
-                  </Link>
-                </FieldDescription>
               </Field>
             </FieldGroup>
           </form>

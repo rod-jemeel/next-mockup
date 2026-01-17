@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth"
+import { APIError } from "better-auth/api"
 import { nextCookies } from "better-auth/next-js"
 import { admin, organization } from "better-auth/plugins"
 import { after } from "next/server"
@@ -47,6 +48,42 @@ export const auth = betterAuth({
     },
   },
 
+  // Disable public signup - users can only join via invitation
+  // The invitation acceptance flow (/organization/accept-invitation) still works
+  disabledPaths: ["/sign-up/email"],
+
+  // Database hooks to enforce invite-only signup as a fallback
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user, ctx) => {
+          // Allow user creation from invitation acceptance flow
+          // The invitation acceptance endpoint creates users without going through /sign-up/email
+          // This is a secondary safeguard in case disabledPaths is bypassed
+          const path = ctx?.path || ""
+          const isInvitationFlow =
+            path.includes("/organization/accept-invitation") ||
+            path.includes("/accept-invitation")
+
+          // If not from invitation flow and not from admin creation, block
+          if (!isInvitationFlow) {
+            // Check if this is being called from a superadmin context
+            // (superadmins might create users through admin endpoints)
+            const session = ctx?.context?.session
+            if (!session || session.user?.role !== "superadmin") {
+              throw new APIError("BAD_REQUEST", {
+                message:
+                  "Public signup is disabled. You must be invited to join.",
+              })
+            }
+          }
+
+          return { data: user }
+        },
+      },
+    },
+  },
+
   // Plugins
   plugins: [
     organization({
@@ -56,12 +93,17 @@ export const auth = betterAuth({
       async sendInvitationEmail(data) {
         // Non-blocking email send using after()
         after(async () => {
-          const inviteLink = `${process.env.BETTER_AUTH_URL}/accept-invitation/${data.id}`
+          const inviteLink = `${process.env.BETTER_AUTH_URL}/invitation/accept/${data.id}`
           // TODO: Implement email sending via Resend/SendGrid
-          console.log(`Invite ${data.email} to ${data.organization.name}: ${inviteLink}`)
+          console.log(
+            `Invite ${data.email} to ${data.organization.name}: ${inviteLink}`
+          )
         })
       },
-      allowUserToCreateOrganization: true,
+      // Only superadmins can create organizations
+      allowUserToCreateOrganization: async (user) => {
+        return user.role === "superadmin"
+      },
     }),
     // Admin plugin for superuser functionality
     admin({

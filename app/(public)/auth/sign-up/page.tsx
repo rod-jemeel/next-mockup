@@ -1,9 +1,10 @@
-import { SignUpForm } from "./_components/sign-up-form"
+import { redirect } from "next/navigation"
 
+/**
+ * Public signup is disabled.
+ * Users can only join via organization invitations.
+ * Redirect to sign-in with informational message.
+ */
 export default function SignUpPage() {
-  return (
-    <div className="w-full max-w-sm">
-      <SignUpForm />
-    </div>
-  )
+  redirect("/auth/sign-in?message=signup_disabled")
 }
