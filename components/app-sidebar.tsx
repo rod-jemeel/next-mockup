@@ -2,17 +2,17 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  LayoutDashboard,
-  Receipt,
-  Package,
-  Settings,
-  LogOut,
-  Building2,
-  ChevronDown,
-} from "lucide-react"
+  DashboardSquare01Icon,
+  Invoice01Icon,
+  DeliveryBox01Icon,
+  Settings01Icon,
+  Logout01Icon,
+  Building03Icon,
+  ArrowDown01Icon,
+} from "@hugeicons/core-free-icons"
 import { authClient } from "@/lib/auth-client"
-import { cn } from "@/lib/utils"
 import {
   Sidebar,
   SidebarContent,
@@ -40,17 +40,17 @@ const mainNav = [
   {
     title: "Dashboard",
     href: "/dashboard",
-    icon: LayoutDashboard,
+    icon: DashboardSquare01Icon,
   },
   {
     title: "Expenses",
     href: "/expenses",
-    icon: Receipt,
+    icon: Invoice01Icon,
   },
   {
     title: "Inventory",
     href: "/inventory/items",
-    icon: Package,
+    icon: DeliveryBox01Icon,
   },
 ]
 
@@ -58,7 +58,7 @@ const settingsNav = [
   {
     title: "Categories",
     href: "/settings/categories",
-    icon: Settings,
+    icon: Settings01Icon,
   },
 ]
 
@@ -96,7 +96,7 @@ export function AppSidebar() {
                 render={<SidebarMenuButton className="w-full justify-between" />}
               >
                 <div className="flex items-center gap-2">
-                  <Building2 className="size-4" />
+                  <HugeiconsIcon icon={Building03Icon} strokeWidth={2} className="size-4" />
                   {orgPending ? (
                     <Skeleton className="h-4 w-24" />
                   ) : (
@@ -105,7 +105,7 @@ export function AppSidebar() {
                     </span>
                   )}
                 </div>
-                <ChevronDown className="size-3" />
+                <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="size-3" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
                 <DropdownMenuItem render={<Link href="/org/select" />}>
@@ -129,7 +129,7 @@ export function AppSidebar() {
                     isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
                   >
                     <Link href={item.href}>
-                      <item.icon />
+                      <HugeiconsIcon icon={item.icon} strokeWidth={2} />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -150,7 +150,7 @@ export function AppSidebar() {
                     isActive={pathname === item.href}
                   >
                     <Link href={item.href}>
-                      <item.icon />
+                      <HugeiconsIcon icon={item.icon} strokeWidth={2} />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -187,7 +187,7 @@ export function AppSidebar() {
                     </>
                   )}
                 </div>
-                <ChevronDown className="size-3" />
+                <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="size-3" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem render={<Link href="/settings/profile" />}>
@@ -195,7 +195,7 @@ export function AppSidebar() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="size-3.5" />
+                  <HugeiconsIcon icon={Logout01Icon} strokeWidth={2} className="size-3.5" />
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>

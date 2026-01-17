@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Building2, Plus, Check } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Building03Icon, PlusSignIcon, Tick01Icon } from "@hugeicons/core-free-icons"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -95,14 +96,14 @@ export function OrgSelector({ organizations }: OrgSelectorProps) {
             >
               <CardContent className="flex items-center gap-3 p-4">
                 <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                  <Building2 className="size-5 text-primary" />
+                  <HugeiconsIcon icon={Building03Icon} strokeWidth={2} className="size-5 text-primary" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{org.name}</p>
                   <p className="text-xs text-muted-foreground">/{org.slug}</p>
                 </div>
                 {activeOrg?.id === org.id && (
-                  <Check className="size-4 text-primary" />
+                  <HugeiconsIcon icon={Tick01Icon} strokeWidth={2} className="size-4 text-primary" />
                 )}
                 {isLoading === org.id && (
                   <div className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -116,7 +117,7 @@ export function OrgSelector({ organizations }: OrgSelectorProps) {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className="w-full gap-2">
-            <Plus className="size-3.5" />
+            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} className="size-3.5" />
             Create Organization
           </Button>
         </DialogTrigger>
