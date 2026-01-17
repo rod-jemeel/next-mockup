@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { supabase } from "@/lib/server/db"
 import { ApiError } from "@/lib/errors"
 import type {
@@ -73,8 +74,9 @@ export async function createExpense(data: {
 
 /**
  * List expenses with filtering and pagination
+ * Uses React.cache() for per-request deduplication
  */
-export async function listExpenses(data: {
+export const listExpenses = cache(async function listExpenses(data: {
   query: ListExpensesQuery
   orgId: string
 }) {
@@ -97,13 +99,21 @@ export async function listExpenses(data: {
   if (query.categoryId) {
     dbQuery = dbQuery.eq("category_id", query.categoryId)
   }
-
-  // Cursor-based pagination using created_at
-  if (query.cursor) {
-    dbQuery = dbQuery.lt("created_at", query.cursor)
+  if (query.vendor) {
+    dbQuery = dbQuery.ilike("vendor", `%${query.vendor}%`)
   }
 
-  dbQuery = dbQuery.limit(query.limit)
+  // Support both cursor and offset-based pagination
+  if (query.cursor) {
+    dbQuery = dbQuery.lt("created_at", query.cursor)
+  } else if (query.page && query.page > 1) {
+    const offset = (query.page - 1) * query.limit
+    dbQuery = dbQuery.range(offset, offset + query.limit - 1)
+  }
+
+  if (!query.page) {
+    dbQuery = dbQuery.limit(query.limit)
+  }
 
   const { data: expenses, error, count } = await dbQuery
 
@@ -137,7 +147,7 @@ export async function listExpenses(data: {
     nextCursor,
     total: count ?? 0,
   }
-}
+})
 
 /**
  * Get a single expense by ID

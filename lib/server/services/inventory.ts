@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { supabase } from "@/lib/server/db"
 import { ApiError } from "@/lib/errors"
 import type {
@@ -50,8 +51,9 @@ export async function createItem(data: {
 
 /**
  * List inventory items with filtering and pagination
+ * Uses React.cache() for per-request deduplication
  */
-export async function listItems(data: {
+export const listItems = cache(async function listItems(data: {
   query: ListItemsQuery
   orgId: string
 }) {
@@ -73,12 +75,17 @@ export async function listItems(data: {
     dbQuery = dbQuery.or(`name.ilike.%${query.search}%,sku.ilike.%${query.search}%`)
   }
 
-  // Cursor-based pagination
+  // Support both cursor and offset-based pagination
   if (query.cursor) {
     dbQuery = dbQuery.gt("name", query.cursor)
+  } else if (query.page && query.page > 1) {
+    const offset = (query.page - 1) * query.limit
+    dbQuery = dbQuery.range(offset, offset + query.limit - 1)
   }
 
-  dbQuery = dbQuery.limit(query.limit)
+  if (!query.page) {
+    dbQuery = dbQuery.limit(query.limit)
+  }
 
   const { data: items, error, count } = await dbQuery
 
@@ -95,7 +102,7 @@ export async function listItems(data: {
     nextCursor,
     total: count ?? 0,
   }
-}
+})
 
 /**
  * Get a single inventory item by ID
