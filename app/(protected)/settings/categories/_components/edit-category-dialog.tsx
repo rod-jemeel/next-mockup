@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Pencil } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { PencilEdit01Icon } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -72,7 +73,7 @@ export function EditCategoryDialog({ category, orgId }: EditCategoryDialogProps)
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon-sm">
-          <Pencil />
+          <HugeiconsIcon icon={PencilEdit01Icon} strokeWidth={2} className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>

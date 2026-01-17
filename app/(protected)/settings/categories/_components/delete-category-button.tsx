@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Trash2 } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Delete01Icon } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
@@ -55,7 +56,7 @@ export function DeleteCategoryButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button variant="ghost" size="icon-sm" />}>
-        <Trash2 className="text-destructive" />
+        <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} className="size-4 text-destructive" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

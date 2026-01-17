@@ -1,7 +1,8 @@
 import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
-import { Tag } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Tag01Icon } from "@hugeicons/core-free-icons"
 import { auth } from "@/lib/auth"
 import { CategoryList, CategoryListSkeleton } from "./_components/category-list"
 import { NewCategoryDialog } from "./_components/new-category-dialog"
@@ -26,7 +27,7 @@ export default async function CategoriesPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-            <Tag className="size-5 text-primary" />
+            <HugeiconsIcon icon={Tag01Icon} strokeWidth={2} className="size-5 text-primary" />
           </div>
           <div>
             <h1 className="text-lg font-medium">Expense Categories</h1>

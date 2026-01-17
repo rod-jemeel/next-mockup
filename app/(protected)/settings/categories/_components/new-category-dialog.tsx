@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { PlusSignIcon } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -62,7 +63,7 @@ export function NewCategoryDialog({ orgId }: NewCategoryDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" className="gap-1">
-          <Plus />
+          <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
           New Category
         </Button>
       </DialogTrigger>
