@@ -11,6 +11,7 @@ import {
   Logout01Icon,
   Building03Icon,
   ArrowDown01Icon,
+  Shield01Icon,
 } from "@hugeicons/core-free-icons"
 import { authClient } from "@/lib/auth-client"
 import {
@@ -159,6 +160,27 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {session?.user?.role === "superadmin" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith("/super")}
+                  >
+                    <Link href="/super">
+                      <HugeiconsIcon icon={Shield01Icon} strokeWidth={2} />
+                      <span>Super Dashboard</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border">
