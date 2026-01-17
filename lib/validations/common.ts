@@ -25,11 +25,12 @@ export const monthSchema = z
   .regex(/^\d{4}-\d{2}$/, "Month must be in YYYY-MM format")
 
 /**
- * Pagination parameters
+ * Pagination parameters (supports both cursor and offset-based)
  */
 export const paginationSchema = z.object({
   cursor: z.string().optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 })
 
 /**
