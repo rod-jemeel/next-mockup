@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/server/db"
 import { ApiError } from "@/lib/errors"
+import { logCreate } from "./audit"
 import type {
   AddPriceInput,
   ListPricesQuery,
@@ -53,6 +54,15 @@ export async function addPrice(data: {
     }
     throw new ApiError("DATABASE_ERROR", "Failed to add price")
   }
+
+  // Audit log (non-blocking)
+  logCreate(orgId, userId, "price_history", price.id, {
+    item_id: itemId,
+    unit_price: input.unitPrice,
+    currency: input.currency ?? "USD",
+    effective_at: input.effectiveAt,
+    vendor: input.vendor,
+  })
 
   return price as PriceRow
 }

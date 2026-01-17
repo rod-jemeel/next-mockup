@@ -15,7 +15,7 @@ type RouteContext = { params: Promise<{ orgId: string }> }
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { orgId } = await context.params
-    const { org } = await requireOrgAccess(orgId, ["org_admin", "inventory"])
+    const { session, org } = await requireOrgAccess(orgId, ["org_admin", "inventory"])
 
     const body = await request.json()
     const result = createItemSchema.safeParse(body)
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const item = await createItem({
       input: result.data,
       orgId: org.id,
+      userId: session.user.id,
     })
 
     return Response.json({ data: item }, { status: 201 })

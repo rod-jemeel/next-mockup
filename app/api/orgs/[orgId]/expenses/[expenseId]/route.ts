@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const { orgId, expenseId } = await context.params
-    const { org } = await requireOrgAccess(orgId, ["org_admin", "finance"])
+    const { session, org } = await requireOrgAccess(orgId, ["org_admin", "finance"])
 
     const body = await request.json()
     const result = updateExpenseSchema.safeParse(body)
@@ -51,6 +51,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const expense = await updateExpense({
       expenseId,
       orgId: org.id,
+      userId: session.user.id,
       input: result.data,
     })
 
@@ -68,11 +69,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const { orgId, expenseId } = await context.params
-    const { org } = await requireOrgAccess(orgId, ["org_admin"])
+    const { session, org } = await requireOrgAccess(orgId, ["org_admin"])
 
     await deleteExpense({
       expenseId,
       orgId: org.id,
+      userId: session.user.id,
     })
 
     return Response.json({ data: { deleted: true } })

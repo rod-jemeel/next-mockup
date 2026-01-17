@@ -1,6 +1,7 @@
 import { cache } from "react"
 import { supabase } from "@/lib/server/db"
 import { ApiError } from "@/lib/errors"
+import { logCreate, logUpdate, logDelete } from "./audit"
 import type {
   CreateExpenseInput,
   UpdateExpenseInput,
@@ -68,6 +69,14 @@ export async function createExpense(data: {
       // Don't fail the request, tags are optional
     }
   }
+
+  // Audit log (non-blocking)
+  logCreate(orgId, userId, "expense", expense.id, {
+    expense_date: input.expenseDate,
+    category_id: input.categoryId,
+    amount: input.amount,
+    vendor: input.vendor,
+  })
 
   return expense as ExpenseRow
 }
@@ -175,9 +184,18 @@ export async function getExpense(data: { expenseId: string; orgId: string }) {
 export async function updateExpense(data: {
   expenseId: string
   orgId: string
+  userId: string
   input: UpdateExpenseInput
 }) {
-  const { expenseId, orgId, input } = data
+  const { expenseId, orgId, userId, input } = data
+
+  // Get current expense for audit log
+  const { data: oldExpense } = await supabase
+    .from("expenses")
+    .select("*")
+    .eq("id", expenseId)
+    .eq("org_id", orgId)
+    .single()
 
   // Build update object with only provided fields
   const updateData: Record<string, unknown> = {}
@@ -224,15 +242,39 @@ export async function updateExpense(data: {
     }
   }
 
-  // Return updated expense
-  return getExpense({ expenseId, orgId })
+  // Get updated expense
+  const updatedExpense = await getExpense({ expenseId, orgId })
+
+  // Audit log (non-blocking)
+  if (oldExpense) {
+    logUpdate(orgId, userId, "expense", expenseId, oldExpense, {
+      expense_date: updatedExpense.expense_date,
+      category_id: updatedExpense.category_id,
+      amount: updatedExpense.amount,
+      vendor: updatedExpense.vendor,
+    })
+  }
+
+  return updatedExpense
 }
 
 /**
  * Delete an expense
  */
-export async function deleteExpense(data: { expenseId: string; orgId: string }) {
-  const { expenseId, orgId } = data
+export async function deleteExpense(data: {
+  expenseId: string
+  orgId: string
+  userId: string
+}) {
+  const { expenseId, orgId, userId } = data
+
+  // Get expense for audit log before deleting
+  const { data: expense } = await supabase
+    .from("expenses")
+    .select("*")
+    .eq("id", expenseId)
+    .eq("org_id", orgId)
+    .single()
 
   // Delete tag links first
   await supabase.from("expense_tag_links").delete().eq("expense_id", expenseId)
@@ -247,6 +289,11 @@ export async function deleteExpense(data: { expenseId: string; orgId: string }) 
   if (error) {
     console.error("Failed to delete expense:", error)
     throw new ApiError("DATABASE_ERROR", "Failed to delete expense")
+  }
+
+  // Audit log (non-blocking)
+  if (expense) {
+    logDelete(orgId, userId, "expense", expenseId, expense)
   }
 
   return { deleted: true }

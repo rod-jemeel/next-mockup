@@ -1,6 +1,7 @@
 import { cache } from "react"
 import { supabase } from "@/lib/server/db"
 import { ApiError } from "@/lib/errors"
+import { logCreate, logUpdate, logDelete } from "./audit"
 import type {
   CreateItemInput,
   UpdateItemInput,
@@ -23,8 +24,9 @@ interface ItemRow {
 export async function createItem(data: {
   input: CreateItemInput
   orgId: string
+  userId: string
 }) {
-  const { input, orgId } = data
+  const { input, orgId, userId } = data
 
   const { data: item, error } = await supabase
     .from("inventory_items")
@@ -45,6 +47,13 @@ export async function createItem(data: {
     }
     throw new ApiError("DATABASE_ERROR", "Failed to create inventory item")
   }
+
+  // Audit log (non-blocking)
+  logCreate(orgId, userId, "inventory_item", item.id, {
+    name: input.name,
+    sku: input.sku,
+    unit: input.unit,
+  })
 
   return item as ItemRow
 }
@@ -130,9 +139,18 @@ export async function getItem(data: { itemId: string; orgId: string }) {
 export async function updateItem(data: {
   itemId: string
   orgId: string
+  userId: string
   input: UpdateItemInput
 }) {
-  const { itemId, orgId, input } = data
+  const { itemId, orgId, userId, input } = data
+
+  // Get current item for audit log
+  const { data: oldItem } = await supabase
+    .from("inventory_items")
+    .select("*")
+    .eq("id", itemId)
+    .eq("org_id", orgId)
+    .single()
 
   // Build update object
   const updateData: Record<string, unknown> = {}
@@ -165,14 +183,31 @@ export async function updateItem(data: {
     throw new ApiError("ITEM_NOT_FOUND")
   }
 
+  // Audit log (non-blocking)
+  if (oldItem) {
+    logUpdate(orgId, userId, "inventory_item", itemId, oldItem, item)
+  }
+
   return item as ItemRow
 }
 
 /**
  * Delete (soft delete by deactivating) an inventory item
  */
-export async function deleteItem(data: { itemId: string; orgId: string }) {
-  const { itemId, orgId } = data
+export async function deleteItem(data: {
+  itemId: string
+  orgId: string
+  userId: string
+}) {
+  const { itemId, orgId, userId } = data
+
+  // Get item for audit log
+  const { data: item } = await supabase
+    .from("inventory_items")
+    .select("*")
+    .eq("id", itemId)
+    .eq("org_id", orgId)
+    .single()
 
   const { error } = await supabase
     .from("inventory_items")
@@ -183,6 +218,11 @@ export async function deleteItem(data: { itemId: string; orgId: string }) {
   if (error) {
     console.error("Failed to deactivate inventory item:", error)
     throw new ApiError("DATABASE_ERROR", "Failed to delete inventory item")
+  }
+
+  // Audit log (non-blocking) - log as delete even though it's a soft delete
+  if (item) {
+    logDelete(orgId, userId, "inventory_item", itemId, item)
   }
 
   return { deleted: true }
