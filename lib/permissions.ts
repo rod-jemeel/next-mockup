@@ -25,6 +25,8 @@ const statement = {
   dashboard: ["read"],
   // Attachments
   attachment: ["create", "read", "delete"],
+  // Department management
+  department: ["create", "read", "update", "delete", "manage_members"],
 } as const
 
 export const ac = createAccessControl(statement)
@@ -39,6 +41,7 @@ export const org_admin = ac.newRole({
   price: ["create", "read"],
   dashboard: ["read"],
   attachment: ["create", "read", "delete"],
+  department: ["create", "read", "update", "delete", "manage_members"],
 })
 
 /**
@@ -51,6 +54,7 @@ export const finance = ac.newRole({
   price: ["read"],
   dashboard: ["read"],
   attachment: ["create", "read"],
+  department: ["read"],
 })
 
 /**
@@ -63,6 +67,7 @@ export const inventory = ac.newRole({
   price: ["create", "read"],
   dashboard: ["read"],
   attachment: ["create", "read"],
+  department: ["read"],
 })
 
 /**
@@ -74,6 +79,7 @@ export const viewer = ac.newRole({
   price: ["read"],
   dashboard: ["read"],
   attachment: ["read"],
+  department: ["read"],
 })
 
 /**
