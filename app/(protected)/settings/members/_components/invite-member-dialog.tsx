@@ -145,6 +145,7 @@ export function InviteMemberDialog({ orgId }: InviteMemberDialogProps) {
                   setFormData((prev) => ({ ...prev, email: e.target.value }))
                 }
                 disabled={isLoading || success}
+                autoComplete="email"
                 required
               />
             </Field>

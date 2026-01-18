@@ -188,6 +188,7 @@ export function CreateFromTemplateDialog({
                 <Input
                   id="totalAmount"
                   type="number"
+                  inputMode="decimal"
                   step="0.01"
                   min="0"
                   placeholder="0.00"
@@ -203,12 +204,13 @@ export function CreateFromTemplateDialog({
             <Field>
               <div className="flex items-center justify-between">
                 <FieldLabel htmlFor="taxAmount">Tax Amount</FieldLabel>
-                <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                <label htmlFor="autoCalcTaxTemplate" className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
                   <input
+                    id="autoCalcTaxTemplate"
                     type="checkbox"
                     checked={autoCalcTax}
                     onChange={(e) => setAutoCalcTax(e.target.checked)}
-                    className="size-3 rounded border-input"
+                    className="size-3 rounded border-input accent-primary"
                     disabled={isLoading}
                   />
                   Auto-calculate ({(defaultTaxRate * 100).toFixed(2)}%)
@@ -217,6 +219,7 @@ export function CreateFromTemplateDialog({
               <Input
                 id="taxAmount"
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 min="0"
                 placeholder="0.00"
