@@ -14,6 +14,8 @@ export interface ForwardingRule {
   category_id: string
   notify_roles: string[]
   notify_user_ids: string[]
+  notify_department_ids: string[]
+  notify_department_member_ids: string[]
   notify_in_app: boolean
   forward_email: boolean
   is_active: boolean
@@ -97,6 +99,8 @@ export async function createForwardingRule({
       category_id: data.categoryId,
       notify_roles: data.notifyRoles || [],
       notify_user_ids: data.notifyUserIds || [],
+      notify_department_ids: data.notifyDepartmentIds || [],
+      notify_department_member_ids: data.notifyDepartmentMemberIds || [],
       notify_in_app: data.notifyInApp,
       forward_email: data.forwardEmail,
       is_active: true,
@@ -127,6 +131,8 @@ export async function updateForwardingRule({
   if (data.categoryId !== undefined) updateData.category_id = data.categoryId
   if (data.notifyRoles !== undefined) updateData.notify_roles = data.notifyRoles
   if (data.notifyUserIds !== undefined) updateData.notify_user_ids = data.notifyUserIds
+  if (data.notifyDepartmentIds !== undefined) updateData.notify_department_ids = data.notifyDepartmentIds
+  if (data.notifyDepartmentMemberIds !== undefined) updateData.notify_department_member_ids = data.notifyDepartmentMemberIds
   if (data.notifyInApp !== undefined) updateData.notify_in_app = data.notifyInApp
   if (data.forwardEmail !== undefined) updateData.forward_email = data.forwardEmail
   if (data.isActive !== undefined) updateData.is_active = data.isActive

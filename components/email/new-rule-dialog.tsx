@@ -31,7 +31,9 @@ import {
   FieldDescription,
 } from "@/components/ui/field"
 import { Badge } from "@/components/ui/badge"
+import { DepartmentSelect, DepartmentMemberSelect } from "./department-select"
 import type { EmailCategory } from "@/lib/server/services/email-categories"
+import type { DepartmentWithMembers } from "@/lib/server/services/departments"
 
 const availableRoles = [
   { value: "org_admin", label: "Admin" },
@@ -42,9 +44,10 @@ const availableRoles = [
 
 interface NewRuleDialogProps {
   categories: EmailCategory[]
+  departments: DepartmentWithMembers[]
 }
 
-export function NewRuleDialog({ categories }: NewRuleDialogProps) {
+export function NewRuleDialog({ categories, departments }: NewRuleDialogProps) {
   const router = useRouter()
   const { data: activeOrg } = authClient.useActiveOrganization()
   const [open, setOpen] = useState(false)
@@ -55,6 +58,8 @@ export function NewRuleDialog({ categories }: NewRuleDialogProps) {
   const [description, setDescription] = useState("")
   const [categoryId, setCategoryId] = useState("")
   const [notifyRoles, setNotifyRoles] = useState<string[]>([])
+  const [notifyDepartmentIds, setNotifyDepartmentIds] = useState<string[]>([])
+  const [notifyDepartmentMemberIds, setNotifyDepartmentMemberIds] = useState<string[]>([])
   const [notifyInApp, setNotifyInApp] = useState(true)
   const [forwardEmail, setForwardEmail] = useState(false)
 
@@ -84,6 +89,8 @@ export function NewRuleDialog({ categories }: NewRuleDialogProps) {
           description: description || undefined,
           categoryId,
           notifyRoles: notifyRoles.length > 0 ? notifyRoles : undefined,
+          notifyDepartmentIds: notifyDepartmentIds.length > 0 ? notifyDepartmentIds : undefined,
+          notifyDepartmentMemberIds: notifyDepartmentMemberIds.length > 0 ? notifyDepartmentMemberIds : undefined,
           notifyInApp,
           forwardEmail,
         }),
@@ -109,6 +116,8 @@ export function NewRuleDialog({ categories }: NewRuleDialogProps) {
     setDescription("")
     setCategoryId("")
     setNotifyRoles([])
+    setNotifyDepartmentIds([])
+    setNotifyDepartmentMemberIds([])
     setNotifyInApp(true)
     setForwardEmail(false)
     setError(null)
@@ -211,6 +220,40 @@ export function NewRuleDialog({ categories }: NewRuleDialogProps) {
                 ))}
               </div>
             </Field>
+
+            {departments.length > 0 && (
+              <>
+                <Field>
+                  <FieldLabel>Notify Departments</FieldLabel>
+                  <FieldDescription>
+                    All members of selected departments will be notified
+                  </FieldDescription>
+                  <div className="mt-2">
+                    <DepartmentSelect
+                      departments={departments}
+                      selectedIds={notifyDepartmentIds}
+                      onChange={setNotifyDepartmentIds}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </Field>
+
+                <Field>
+                  <FieldLabel>Notify Specific Members</FieldLabel>
+                  <FieldDescription>
+                    Select individual members from departments
+                  </FieldDescription>
+                  <div className="mt-2">
+                    <DepartmentMemberSelect
+                      departments={departments}
+                      selectedMemberIds={notifyDepartmentMemberIds}
+                      onChange={setNotifyDepartmentMemberIds}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </Field>
+              </>
+            )}
 
             <div className="grid grid-cols-2 gap-4 pt-2">
               <Field orientation="horizontal">

@@ -1,6 +1,10 @@
 import { supabase } from "@/lib/server/db"
 import { sendEmail, generateForwardedEmailHtml, isEmailMockMode } from "./email-sender"
 import { createNotificationsForUsers } from "./notifications"
+import {
+  getMembersByDepartmentIds,
+  getUsersByDepartmentMemberIds,
+} from "./departments"
 import type { DetectedEmailWithCategory } from "./detected-emails"
 import type { ForwardingRuleWithCategory } from "./forwarding-rules"
 
@@ -172,6 +176,7 @@ async function processRule({
 
 /**
  * Get user IDs that should be notified based on rule configuration
+ * Resolves roles, direct user IDs, department IDs, and department member IDs
  */
 async function getUsersForRule(
   rule: ForwardingRuleWithCategory,
@@ -179,12 +184,12 @@ async function getUsersForRule(
 ): Promise<string[]> {
   const userIds = new Set<string>()
 
-  // Add specific user IDs from the rule
+  // 1. Add specific user IDs from the rule
   if (rule.notify_user_ids && rule.notify_user_ids.length > 0) {
     rule.notify_user_ids.forEach((id) => userIds.add(id))
   }
 
-  // Get users by role
+  // 2. Get users by role
   if (rule.notify_roles && rule.notify_roles.length > 0) {
     const { data: members } = await supabase
       .from("member")
@@ -195,6 +200,18 @@ async function getUsersForRule(
     if (members) {
       members.forEach((m) => userIds.add(m.userId))
     }
+  }
+
+  // 3. Get users by entire departments (NEW)
+  if (rule.notify_department_ids && rule.notify_department_ids.length > 0) {
+    const deptUserIds = await getMembersByDepartmentIds(rule.notify_department_ids)
+    deptUserIds.forEach((id) => userIds.add(id))
+  }
+
+  // 4. Get users by specific department member IDs (NEW)
+  if (rule.notify_department_member_ids && rule.notify_department_member_ids.length > 0) {
+    const memberUserIds = await getUsersByDepartmentMemberIds(rule.notify_department_member_ids)
+    memberUserIds.forEach((id) => userIds.add(id))
   }
 
   return Array.from(userIds)

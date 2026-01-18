@@ -6,16 +6,19 @@ import { NewRuleDialog } from "@/components/email/new-rule-dialog"
 import { EditRuleDialog } from "@/components/email/edit-rule-dialog"
 import type { ForwardingRuleWithCategory } from "@/lib/server/services/forwarding-rules"
 import type { EmailCategory } from "@/lib/server/services/email-categories"
+import type { DepartmentWithMembers } from "@/lib/server/services/departments"
 
 interface RulesContentClientProps {
   rules: ForwardingRuleWithCategory[]
   categories: EmailCategory[]
+  departments: DepartmentWithMembers[]
   orgId: string
 }
 
 export function RulesContentClient({
   rules,
   categories,
+  departments,
   orgId,
 }: RulesContentClientProps) {
   const [editingRule, setEditingRule] = useState<ForwardingRuleWithCategory | null>(null)
@@ -30,7 +33,7 @@ export function RulesContentClient({
     return (
       <div className="space-y-4">
         <div className="flex justify-end">
-          <NewRuleDialog categories={categories} />
+          <NewRuleDialog categories={categories} departments={departments} />
         </div>
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
           <p className="text-sm text-muted-foreground">No email categories defined</p>
@@ -46,7 +49,7 @@ export function RulesContentClient({
     return (
       <div className="space-y-4">
         <div className="flex justify-end">
-          <NewRuleDialog categories={categories} />
+          <NewRuleDialog categories={categories} departments={departments} />
         </div>
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
           <p className="text-sm text-muted-foreground">No forwarding rules yet</p>
@@ -61,7 +64,7 @@ export function RulesContentClient({
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <NewRuleDialog categories={categories} />
+        <NewRuleDialog categories={categories} departments={departments} />
       </div>
       <div className="space-y-3">
         {rules.map((rule) => (
@@ -69,6 +72,7 @@ export function RulesContentClient({
             key={rule.id}
             rule={rule}
             orgId={orgId}
+            departments={departments}
             onEdit={handleEdit}
           />
         ))}
@@ -76,6 +80,7 @@ export function RulesContentClient({
       <EditRuleDialog
         rule={editingRule}
         categories={categories}
+        departments={departments}
         orgId={orgId}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}

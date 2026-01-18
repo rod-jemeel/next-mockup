@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Bell, Mail, Pencil, Trash2, Users } from "lucide-react"
+import { Bell, Building2, Mail, Pencil, Trash2, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
@@ -19,14 +19,16 @@ import {
 } from "@/components/ui/alert-dialog"
 import { CategoryBadge } from "./category-badge"
 import type { ForwardingRuleWithCategory } from "@/lib/server/services/forwarding-rules"
+import type { DepartmentWithMembers } from "@/lib/server/services/departments"
 
 interface RuleCardProps {
   rule: ForwardingRuleWithCategory
   orgId: string
+  departments: DepartmentWithMembers[]
   onEdit: (rule: ForwardingRuleWithCategory) => void
 }
 
-export function RuleCard({ rule, orgId, onEdit }: RuleCardProps) {
+export function RuleCard({ rule, orgId, departments, onEdit }: RuleCardProps) {
   const router = useRouter()
   const [isUpdating, setIsUpdating] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -93,15 +95,36 @@ export function RuleCard({ rule, orgId, onEdit }: RuleCardProps) {
           )}
         </div>
 
-        <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Users className="size-3" />
-            <span>
-              {rule.notify_roles.length > 0
-                ? rule.notify_roles.map((r) => roleLabels[r] || r).join(", ")
-                : "No roles"}
-            </span>
-          </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
+          {rule.notify_roles.length > 0 && (
+            <div className="flex items-center gap-1">
+              <Users className="size-3" />
+              <span>
+                {rule.notify_roles.map((r) => roleLabels[r] || r).join(", ")}
+              </span>
+            </div>
+          )}
+
+          {rule.notify_department_ids && rule.notify_department_ids.length > 0 && (
+            <div className="flex items-center gap-1">
+              <Building2 className="size-3" />
+              <span>
+                {rule.notify_department_ids
+                  .map((id) => departments.find((d) => d.id === id)?.name || "Unknown")
+                  .join(", ")}
+              </span>
+            </div>
+          )}
+
+          {rule.notify_department_member_ids && rule.notify_department_member_ids.length > 0 && (
+            <div className="flex items-center gap-1">
+              <Users className="size-3" />
+              <span>
+                {rule.notify_department_member_ids.length} specific member
+                {rule.notify_department_member_ids.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             {rule.notify_in_app && (

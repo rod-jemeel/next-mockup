@@ -40,6 +40,8 @@ export const createForwardingRuleSchema = z.object({
   categoryId: z.string().uuid(),
   notifyRoles: z.array(z.enum(orgRoles)).optional(),
   notifyUserIds: z.array(z.string()).optional(),
+  notifyDepartmentIds: z.array(z.string().uuid()).optional(),
+  notifyDepartmentMemberIds: z.array(z.string().uuid()).optional(),
   notifyInApp: z.boolean().default(true),
   forwardEmail: z.boolean().default(false),
 })
@@ -50,6 +52,8 @@ export const updateForwardingRuleSchema = z.object({
   categoryId: z.string().uuid().optional(),
   notifyRoles: z.array(z.enum(orgRoles)).optional(),
   notifyUserIds: z.array(z.string()).optional(),
+  notifyDepartmentIds: z.array(z.string().uuid()).optional(),
+  notifyDepartmentMemberIds: z.array(z.string().uuid()).optional(),
   notifyInApp: z.boolean().optional(),
   forwardEmail: z.boolean().optional(),
   isActive: z.boolean().optional(),

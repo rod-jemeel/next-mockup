@@ -28,8 +28,10 @@ import {
   FieldDescription,
 } from "@/components/ui/field"
 import { Badge } from "@/components/ui/badge"
+import { DepartmentSelect, DepartmentMemberSelect } from "./department-select"
 import type { EmailCategory } from "@/lib/server/services/email-categories"
 import type { ForwardingRuleWithCategory } from "@/lib/server/services/forwarding-rules"
+import type { DepartmentWithMembers } from "@/lib/server/services/departments"
 
 const availableRoles = [
   { value: "org_admin", label: "Admin" },
@@ -41,6 +43,7 @@ const availableRoles = [
 interface EditRuleDialogProps {
   rule: ForwardingRuleWithCategory | null
   categories: EmailCategory[]
+  departments: DepartmentWithMembers[]
   orgId: string
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -49,6 +52,7 @@ interface EditRuleDialogProps {
 export function EditRuleDialog({
   rule,
   categories,
+  departments,
   orgId,
   open,
   onOpenChange,
@@ -61,6 +65,8 @@ export function EditRuleDialog({
   const [description, setDescription] = useState("")
   const [categoryId, setCategoryId] = useState("")
   const [notifyRoles, setNotifyRoles] = useState<string[]>([])
+  const [notifyDepartmentIds, setNotifyDepartmentIds] = useState<string[]>([])
+  const [notifyDepartmentMemberIds, setNotifyDepartmentMemberIds] = useState<string[]>([])
   const [notifyInApp, setNotifyInApp] = useState(true)
   const [forwardEmail, setForwardEmail] = useState(false)
 
@@ -70,6 +76,8 @@ export function EditRuleDialog({
       setDescription(rule.description || "")
       setCategoryId(rule.category_id)
       setNotifyRoles(rule.notify_roles)
+      setNotifyDepartmentIds(rule.notify_department_ids || [])
+      setNotifyDepartmentMemberIds(rule.notify_department_member_ids || [])
       setNotifyInApp(rule.notify_in_app)
       setForwardEmail(rule.forward_email)
       setError(null)
@@ -100,6 +108,8 @@ export function EditRuleDialog({
           description: description || null,
           categoryId,
           notifyRoles,
+          notifyDepartmentIds,
+          notifyDepartmentMemberIds,
           notifyInApp,
           forwardEmail,
         }),
@@ -210,6 +220,40 @@ export function EditRuleDialog({
                 ))}
               </div>
             </Field>
+
+            {departments.length > 0 && (
+              <>
+                <Field>
+                  <FieldLabel>Notify Departments</FieldLabel>
+                  <FieldDescription>
+                    All members of selected departments will be notified
+                  </FieldDescription>
+                  <div className="mt-2">
+                    <DepartmentSelect
+                      departments={departments}
+                      selectedIds={notifyDepartmentIds}
+                      onChange={setNotifyDepartmentIds}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </Field>
+
+                <Field>
+                  <FieldLabel>Notify Specific Members</FieldLabel>
+                  <FieldDescription>
+                    Select individual members from departments
+                  </FieldDescription>
+                  <div className="mt-2">
+                    <DepartmentMemberSelect
+                      departments={departments}
+                      selectedMemberIds={notifyDepartmentMemberIds}
+                      onChange={setNotifyDepartmentMemberIds}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </Field>
+              </>
+            )}
 
             <div className="grid grid-cols-2 gap-4 pt-2">
               <Field orientation="horizontal">
