@@ -5,6 +5,7 @@ import {
   seedForwardingRules,
   seedSecondEmailAccount,
 } from "@/lib/server/services/email-seed"
+import { processForwardingBatch } from "@/lib/server/services/email-forwarding-processor"
 import type {
   ConnectEmailAccountInput,
   ListEmailIntegrationsInput,
@@ -160,7 +161,12 @@ export async function syncEmailAccount({
 }: {
   integrationId: string
   orgId: string
-}): Promise<{ syncedCount: number; categoriesCount: number; rulesCount: number }> {
+}): Promise<{
+  syncedCount: number
+  categoriesCount: number
+  rulesCount: number
+  forwardingResults: { notificationsSent: number; emailsForwarded: number }
+}> {
   // Get the integration to find user_id
   const { data: integration, error: getError } = await supabase
     .from("email_integrations")
@@ -190,6 +196,34 @@ export async function syncEmailAccount({
     userId: integration.user_id,
   })
 
+  // Process forwarding rules for newly synced emails
+  // Fetch recent unforwarded emails and process them
+  const { data: recentEmails } = await supabase
+    .from("detected_emails")
+    .select("*, email_categories(id, name, color)")
+    .eq("org_id", orgId)
+    .eq("is_forwarded", false)
+    .not("category_id", "is", null)
+    .order("received_at", { ascending: false })
+    .limit(10) // Process latest 10 unforwarded emails
+
+  let forwardingResults = { notificationsSent: 0, emailsForwarded: 0 }
+
+  if (recentEmails && recentEmails.length > 0) {
+    const results = await processForwardingBatch({
+      emails: recentEmails,
+      orgId,
+    })
+
+    forwardingResults = results.reduce(
+      (acc, r) => ({
+        notificationsSent: acc.notificationsSent + r.notificationsSent,
+        emailsForwarded: acc.emailsForwarded + r.emailsForwarded,
+      }),
+      { notificationsSent: 0, emailsForwarded: 0 }
+    )
+  }
+
   // Update the sync timestamp
   const { error } = await supabase
     .from("email_integrations")
@@ -207,5 +241,6 @@ export async function syncEmailAccount({
     syncedCount: seedResult.emailsCount,
     categoriesCount: seedResult.categoriesCount,
     rulesCount,
+    forwardingResults,
   }
 }
