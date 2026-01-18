@@ -249,7 +249,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                    isActive={pathname === item.href || (pathname.startsWith(item.href + "/") && !mainNav.some(nav => nav.href !== item.href && pathname.startsWith(nav.href)))}
                   >
                     <Link href={item.href}>
                       <HugeiconsIcon icon={item.icon} strokeWidth={2} />
