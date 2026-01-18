@@ -36,10 +36,19 @@ export function EmailListItem({
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          onClick?.()
+        }
+      }}
       className={cn(
         "flex items-start gap-3 px-4 py-3 border-b border-border",
         "hover:bg-muted/50 cursor-pointer transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
         !isRead && "bg-primary/5",
         isSelected && "bg-muted"
       )}

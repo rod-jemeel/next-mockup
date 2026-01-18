@@ -122,7 +122,7 @@ export function EditRuleDialog({
   if (!rule) return null
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Forwarding Rule</DialogTitle>
@@ -188,13 +188,22 @@ export function EditRuleDialog({
               <FieldDescription>
                 Members with these roles will be notified
               </FieldDescription>
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2" role="group" aria-label="Select roles to notify">
                 {availableRoles.map((role) => (
                   <Badge
                     key={role.value}
+                    role="checkbox"
+                    aria-checked={notifyRoles.includes(role.value)}
+                    tabIndex={0}
                     variant={notifyRoles.includes(role.value) ? "default" : "outline"}
-                    className="cursor-pointer"
+                    className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     onClick={() => toggleRole(role.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault()
+                        toggleRole(role.value)
+                      }
+                    }}
                   >
                     {role.label}
                   </Badge>
