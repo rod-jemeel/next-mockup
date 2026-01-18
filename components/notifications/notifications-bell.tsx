@@ -193,11 +193,19 @@ export function NotificationsBell() {
           ) : (
             <div className="divide-y divide-border">
               {notifications.map((notification) => (
-                <button
+                <div
                   key={notification.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleNotificationClick(notification)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleNotificationClick(notification)
+                    }
+                  }}
                   className={cn(
-                    "flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted/50",
+                    "flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted/50 cursor-pointer",
                     !notification.is_read && "bg-primary/5"
                   )}
                 >
@@ -235,7 +243,7 @@ export function NotificationsBell() {
                       <Check className="size-3" />
                     </Button>
                   )}
-                </button>
+                </div>
               ))}
             </div>
           )}
