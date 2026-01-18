@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import { connection } from "next/server"
 import { headers } from "next/headers"
+import { Building2 } from "lucide-react"
 import { auth } from "@/lib/auth"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -9,10 +10,13 @@ import { OrganizationSettingsForm } from "./_components/organization-settings-fo
 
 function SettingsSkeleton() {
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
-      <div>
-        <Skeleton className="h-6 w-48 mb-2" />
-        <Skeleton className="h-4 w-64" />
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Skeleton className="size-10 rounded-lg" />
+        <div>
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
       </div>
       <Card>
         <CardHeader>
@@ -71,13 +75,18 @@ async function SettingsContent() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
+    <div className="space-y-6">
       {/* Static header */}
-      <div>
-        <h1 className="text-lg font-medium">Organization Settings</h1>
-        <p className="text-xs text-muted-foreground">
-          Configure settings for your organization
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+          <Building2 className="size-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-lg font-medium">Organization Settings</h1>
+          <p className="text-xs text-muted-foreground">
+            Configure settings for your organization
+          </p>
+        </div>
       </div>
 
       {/* Client form with initial data */}

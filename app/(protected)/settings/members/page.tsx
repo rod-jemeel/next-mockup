@@ -1,12 +1,10 @@
 import { Suspense } from "react"
 import dynamic from "next/dynamic"
-import Link from "next/link"
 import { redirect } from "next/navigation"
 import { connection } from "next/server"
 import { headers } from "next/headers"
-import { ArrowLeft } from "lucide-react"
+import { UserPlus } from "lucide-react"
 import { auth } from "@/lib/auth"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MembersList } from "./_components/members-list"
 import { InvitationsList } from "./_components/invitations-list"
@@ -125,14 +123,12 @@ async function PageWithAuth() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/settings/categories">
-              <ArrowLeft className="size-4" />
-            </Link>
-          </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+            <UserPlus className="size-5 text-primary" />
+          </div>
           <div>
             <h1 className="text-lg font-medium">Team Members</h1>
             <p className="text-xs text-muted-foreground">
