@@ -37,6 +37,7 @@ interface DashboardClientProps {
   orgId: string
   dashboardData: {
     totalExpenses: number
+    totalTax: number
     expenseCount: number
     momChange: number | null
     categoryBreakdown: CategoryData[]
@@ -71,6 +72,7 @@ export function DashboardClient({
   // KPI data for overview
   const kpiData = {
     total_expenses: dashboardData.totalExpenses,
+    total_tax: dashboardData.totalTax,
     expense_count: dashboardData.expenseCount,
     avg_expense: avgExpense,
     top_category: topCategory,
@@ -84,6 +86,7 @@ export function DashboardClient({
   // Trends (only expense-related have MoM)
   const trends = {
     total_expenses: dashboardData.momChange,
+    total_tax: null,
     expense_count: null,
     avg_expense: null,
     top_category: null,
@@ -100,6 +103,7 @@ export function DashboardClient({
   // Expense data for expenses tab
   const expenseData = {
     totalExpenses: dashboardData.totalExpenses,
+    totalTax: dashboardData.totalTax,
     expenseCount: dashboardData.expenseCount,
     avgExpense,
     momChange: dashboardData.momChange,

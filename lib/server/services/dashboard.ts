@@ -22,6 +22,7 @@ interface InventoryMover {
 interface DashboardData {
   month: string
   totalExpenses: number
+  totalTax: number
   expenseCount: number
   momChange: number | null
   categoryBreakdown: CategoryBreakdown[]
@@ -58,7 +59,7 @@ export const getDashboard = cache(async function getDashboard(data: {
   // Start all independent queries immediately (async-api-routes)
   const expensesPromise = supabase
     .from("expenses")
-    .select("id, amount, category_id, expense_categories(id, name)")
+    .select("id, amount, tax_amount, category_id, expense_categories(id, name)")
     .eq("org_id", orgId)
     .gte("expense_date", startStr)
     .lte("expense_date", endStr)
@@ -95,6 +96,7 @@ export const getDashboard = cache(async function getDashboard(data: {
 
   // Calculate totals
   const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0)
+  const totalTax = expenses.reduce((sum, e) => sum + Number(e.tax_amount || 0), 0)
   const expenseCount = expenses.length
 
   // Calculate category breakdown
@@ -146,6 +148,7 @@ export const getDashboard = cache(async function getDashboard(data: {
   return {
     month,
     totalExpenses,
+    totalTax,
     expenseCount,
     momChange,
     categoryBreakdown,

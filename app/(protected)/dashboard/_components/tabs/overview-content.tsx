@@ -39,6 +39,7 @@ interface InventoryMover {
 
 interface KpiData {
   total_expenses: number
+  total_tax: number
   expense_count: number
   avg_expense: number
   top_category: string | null
@@ -73,6 +74,8 @@ export function OverviewContent({
     switch (kpiId) {
       case "total_expenses":
         return kpiData.total_expenses
+      case "total_tax":
+        return kpiData.total_tax
       case "expense_count":
         return kpiData.expense_count
       case "avg_expense":

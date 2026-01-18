@@ -79,6 +79,7 @@ export async function ExpenseList({
                 <TableHead>Category</TableHead>
                 <TableHead>Vendor</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">Tax</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
@@ -98,6 +99,9 @@ export async function ExpenseList({
                 </TableCell>
                 <TableCell className="text-right text-xs font-medium">
                   {formatCurrency(expense.amount)}
+                </TableCell>
+                <TableCell className="text-right text-xs text-muted-foreground">
+                  {expense.tax_amount > 0 ? formatCurrency(expense.tax_amount) : "-"}
                 </TableCell>
                 <TableCell>
                   <ExpenseActions expense={expense} orgId={orgId} />
@@ -128,6 +132,7 @@ export function ExpenseListSkeleton() {
             <TableHead>Category</TableHead>
             <TableHead>Vendor</TableHead>
             <TableHead className="text-right">Amount</TableHead>
+            <TableHead className="text-right">Tax</TableHead>
             <TableHead className="w-10"></TableHead>
           </TableRow>
         </TableHeader>
@@ -145,6 +150,9 @@ export function ExpenseListSkeleton() {
               </TableCell>
               <TableCell className="text-right">
                 <Skeleton className="ml-auto h-4 w-16" />
+              </TableCell>
+              <TableCell className="text-right">
+                <Skeleton className="ml-auto h-4 w-12" />
               </TableCell>
               <TableCell>
                 <Skeleton className="size-5" />

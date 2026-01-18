@@ -18,6 +18,7 @@ interface Expense {
   vendor: string | null
   categoryName: string
   amount: number
+  taxAmount: number
 }
 
 interface RecentExpensesTableProps {
@@ -79,6 +80,7 @@ export function RecentExpensesTable({
               <TableHead>Vendor</TableHead>
               <TableHead>Category</TableHead>
               <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-right">Tax</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -93,6 +95,9 @@ export function RecentExpensesTable({
                 </TableCell>
                 <TableCell className="text-right font-medium">
                   {formatCurrency(expense.amount)}
+                </TableCell>
+                <TableCell className="text-right text-muted-foreground">
+                  {expense.taxAmount > 0 ? formatCurrency(expense.taxAmount) : "—"}
                 </TableCell>
               </TableRow>
             ))}

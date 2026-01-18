@@ -23,6 +23,7 @@ interface CategoryData {
 
 interface ExpenseData {
   totalExpenses: number
+  totalTax: number
   expenseCount: number
   avgExpense: number
   momChange: number | null
@@ -44,9 +45,9 @@ export function ExpensesContent({ data, historicalData }: ExpensesContentProps) 
           value={data.totalExpenses}
           trend={data.momChange}
         />
+        <KpiCard kpiId="total_tax" value={data.totalTax} />
         <KpiCard kpiId="expense_count" value={data.expenseCount} />
         <KpiCard kpiId="avg_expense" value={data.avgExpense} />
-        <KpiCard kpiId="top_category" value={data.topCategory} />
       </KpiGrid>
 
       <div className="grid gap-4 md:grid-cols-2">

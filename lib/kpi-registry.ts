@@ -40,6 +40,12 @@ export const KPI_REGISTRY = {
     format: "percent",
     description: "Month-over-month change in spending",
   },
+  total_tax: {
+    label: "Total Tax",
+    category: "expense",
+    format: "currency",
+    description: "Sum of all tax paid for the period",
+  },
 
   // Inventory KPIs (both dashboards)
   inventory_items: {

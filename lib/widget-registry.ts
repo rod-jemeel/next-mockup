@@ -107,6 +107,13 @@ export const KPI_WIDGETS = {
     format: "number",
     description: "Number of expense categories used",
   },
+  total_tax: {
+    type: "kpi",
+    label: "Total Tax",
+    category: "expense",
+    format: "currency",
+    description: "Sum of all tax paid for the period",
+  },
 
   // Inventory KPIs
   inventory_items: {
