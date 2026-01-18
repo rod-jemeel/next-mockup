@@ -242,7 +242,7 @@ const queryExecutors: {
   },
 
   /**
-   * Get monthly expense totals
+   * Get monthly expense totals (including tax breakdown)
    */
   monthly_expenses: async (context, params) => {
     if (!canAccessOrg(context, params.orgId)) {
@@ -251,7 +251,7 @@ const queryExecutors: {
 
     const { data, error } = await supabase
       .from("expenses")
-      .select("id, amount, expense_date")
+      .select("id, amount, amount_pre_tax, tax_amount, effective_tax_rate, expense_date")
       .eq("org_id", params.orgId)
       .gte("expense_date", params.startDate)
       .lte("expense_date", params.endDate)
@@ -261,12 +261,14 @@ const queryExecutors: {
     }
 
     // Aggregate by month
-    const monthlyTotals = new Map<string, { total: number; count: number }>()
+    const monthlyTotals = new Map<string, { total: number; preTax: number; tax: number; count: number }>()
 
     for (const expense of data) {
       const month = expense.expense_date.substring(0, 7) // YYYY-MM
-      const existing = monthlyTotals.get(month) || { total: 0, count: 0 }
+      const existing = monthlyTotals.get(month) || { total: 0, preTax: 0, tax: 0, count: 0 }
       existing.total += Number(expense.amount)
+      existing.preTax += expense.amount_pre_tax ? Number(expense.amount_pre_tax) : Number(expense.amount)
+      existing.tax += expense.tax_amount ? Number(expense.tax_amount) : 0
       existing.count += 1
       monthlyTotals.set(month, existing)
     }
@@ -275,14 +277,24 @@ const queryExecutors: {
       .map(([month, data]) => ({
         month,
         total: data.total,
+        preTaxTotal: data.preTax,
+        taxTotal: data.tax,
+        effectiveTaxRate: data.preTax > 0 ? (data.tax / data.preTax) * 100 : 0,
         count: data.count,
       }))
       .sort((a, b) => a.month.localeCompare(b.month))
 
+    const grandTotal = months.reduce((sum, m) => sum + m.total, 0)
+    const grandPreTax = months.reduce((sum, m) => sum + m.preTaxTotal, 0)
+    const grandTax = months.reduce((sum, m) => sum + m.taxTotal, 0)
+
     return {
       data: {
         months,
-        grandTotal: months.reduce((sum, m) => sum + m.total, 0),
+        grandTotal,
+        grandPreTaxTotal: grandPreTax,
+        grandTaxTotal: grandTax,
+        averageTaxRate: grandPreTax > 0 ? (grandTax / grandPreTax) * 100 : 0,
         totalCount: months.reduce((sum, m) => sum + m.count, 0),
       },
       error: null,
@@ -290,7 +302,7 @@ const queryExecutors: {
   },
 
   /**
-   * Get expenses by category
+   * Get expenses by category (including tax breakdown)
    */
   expenses_by_category: async (context, params) => {
     if (!canAccessOrg(context, params.orgId)) {
@@ -302,6 +314,8 @@ const queryExecutors: {
       .select(`
         id,
         amount,
+        amount_pre_tax,
+        tax_amount,
         expense_categories(id, name)
       `)
       .eq("org_id", params.orgId)
@@ -313,26 +327,31 @@ const queryExecutors: {
     }
 
     // Aggregate by category
-    const categoryTotals = new Map<string, { name: string; total: number; count: number }>()
+    const categoryTotals = new Map<string, { name: string; total: number; preTax: number; tax: number; count: number }>()
 
     for (const expense of data) {
       const category = expense.expense_categories as unknown as { id: string; name: string } | null
       const catId = category?.id || "uncategorized"
       const catName = category?.name || "Uncategorized"
 
-      const existing = categoryTotals.get(catId) || { name: catName, total: 0, count: 0 }
+      const existing = categoryTotals.get(catId) || { name: catName, total: 0, preTax: 0, tax: 0, count: 0 }
       existing.total += Number(expense.amount)
+      existing.preTax += expense.amount_pre_tax ? Number(expense.amount_pre_tax) : Number(expense.amount)
+      existing.tax += expense.tax_amount ? Number(expense.tax_amount) : 0
       existing.count += 1
       categoryTotals.set(catId, existing)
     }
 
     const grandTotal = Array.from(categoryTotals.values()).reduce((sum, c) => sum + c.total, 0)
+    const grandTax = Array.from(categoryTotals.values()).reduce((sum, c) => sum + c.tax, 0)
 
     const categories = Array.from(categoryTotals.entries())
       .map(([id, data]) => ({
         categoryId: id,
         categoryName: data.name,
         total: data.total,
+        preTaxTotal: data.preTax,
+        taxTotal: data.tax,
         count: data.count,
         percentOfTotal: grandTotal > 0 ? (data.total / grandTotal) * 100 : 0,
       }))
@@ -342,13 +361,14 @@ const queryExecutors: {
       data: {
         categories,
         grandTotal,
+        grandTaxTotal: grandTax,
       },
       error: null,
     }
   },
 
   /**
-   * Get top vendors by spend
+   * Get top vendors by spend (including tax breakdown)
    */
   top_vendors: async (context, params) => {
     if (!canAccessOrg(context, params.orgId)) {
@@ -359,7 +379,7 @@ const queryExecutors: {
 
     const { data, error } = await supabase
       .from("expenses")
-      .select("vendor, amount")
+      .select("vendor, amount, amount_pre_tax, tax_amount")
       .eq("org_id", params.orgId)
       .gte("expense_date", params.startDate)
       .lte("expense_date", params.endDate)
@@ -370,12 +390,14 @@ const queryExecutors: {
     }
 
     // Aggregate by vendor
-    const vendorTotals = new Map<string, { total: number; count: number }>()
+    const vendorTotals = new Map<string, { total: number; preTax: number; tax: number; count: number }>()
 
     for (const expense of data) {
       if (!expense.vendor) continue
-      const existing = vendorTotals.get(expense.vendor) || { total: 0, count: 0 }
+      const existing = vendorTotals.get(expense.vendor) || { total: 0, preTax: 0, tax: 0, count: 0 }
       existing.total += Number(expense.amount)
+      existing.preTax += expense.amount_pre_tax ? Number(expense.amount_pre_tax) : Number(expense.amount)
+      existing.tax += expense.tax_amount ? Number(expense.tax_amount) : 0
       existing.count += 1
       vendorTotals.set(expense.vendor, existing)
     }
@@ -384,6 +406,8 @@ const queryExecutors: {
       .map(([name, data]) => ({
         vendor: name,
         total: data.total,
+        preTaxTotal: data.preTax,
+        taxTotal: data.tax,
         count: data.count,
       }))
       .sort((a, b) => b.total - a.total)
@@ -593,7 +617,7 @@ const queryExecutors: {
   },
 
   /**
-   * Compare spending across organizations (super user only)
+   * Compare spending across organizations (super user only, including tax breakdown)
    */
   cross_org_spending: async (context, params) => {
     if (!canQueryCrossOrg(context)) {
@@ -614,27 +638,35 @@ const queryExecutors: {
       orgs.map(async (org) => {
         const { data: expenses } = await supabase
           .from("expenses")
-          .select("amount")
+          .select("amount, amount_pre_tax, tax_amount")
           .eq("org_id", org.id)
           .gte("expense_date", params.startDate)
           .lte("expense_date", params.endDate)
 
         const total = expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0
+        const preTax = expenses?.reduce((sum, e) => sum + (e.amount_pre_tax ? Number(e.amount_pre_tax) : Number(e.amount)), 0) || 0
+        const tax = expenses?.reduce((sum, e) => sum + (e.tax_amount ? Number(e.tax_amount) : 0), 0) || 0
         const count = expenses?.length || 0
 
         return {
           orgId: org.id,
           orgName: org.name,
           total,
+          preTaxTotal: preTax,
+          taxTotal: tax,
           count,
         }
       })
     )
 
+    const grandTotal = spending.reduce((sum, s) => sum + s.total, 0)
+    const grandTax = spending.reduce((sum, s) => sum + s.taxTotal, 0)
+
     return {
       data: {
         spending: spending.sort((a, b) => b.total - a.total),
-        grandTotal: spending.reduce((sum, s) => sum + s.total, 0),
+        grandTotal,
+        grandTaxTotal: grandTax,
       },
       error: null,
     }

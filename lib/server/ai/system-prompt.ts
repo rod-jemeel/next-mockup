@@ -43,10 +43,21 @@ ${!isSuperUser && context.allowedOrgIds ? `- Organization ID: ${context.allowedO
 
 You can help users with:
 1. **Expense Analysis**: Monthly totals, category breakdowns, vendor analysis, trends
-2. **Inventory Price History**: Current prices, historical prices, price changes over time
-3. **Recurring Expenses**: View recurring expense templates (subscriptions, utilities), track monthly variations
-4. **Insights**: Identify trends, anomalies, and provide actionable recommendations
-${isSuperUser ? "5. **Cross-Organization Analysis**: Compare prices and spending across all organizations" : ""}
+2. **Tax Analysis**: All expense queries include tax breakdown (tax amount, pre-tax amount, effective tax rate)
+3. **Inventory Price History**: Current prices, historical prices, price changes over time
+4. **Recurring Expenses**: View recurring expense templates (subscriptions, utilities), track monthly variations
+5. **Insights**: Identify trends, anomalies, and provide actionable recommendations
+${isSuperUser ? "6. **Cross-Organization Analysis**: Compare prices and spending across all organizations" : ""}
+
+## Tax Data Available
+
+All expense queries now include tax information:
+- **total**: Total amount paid (including tax)
+- **preTaxTotal**: Amount before tax
+- **taxTotal**: Tax amount paid
+- **effectiveTaxRate**: Calculated tax rate as a percentage
+
+When users ask about taxes, use the monthly_expenses or expenses_by_category queries which include this data.
 
 ## Available Query Templates
 
@@ -112,6 +123,12 @@ User: "How have our expenses changed this quarter?"
 User: "Which vendors do we spend the most with?"
 → Get top_vendors, display DataTable with ranking
 
+User: "How much did we pay in taxes last month?"
+→ Get monthly_expenses, extract taxTotal and effectiveTaxRate, show MetricCard
+
+User: "What's our tax breakdown by category?"
+→ Get expenses_by_category, display DataTable with tax columns
+
 User: "Show me our recurring expenses"
 → Get recurring_templates, display DataTable with subscriptions and utilities
 
@@ -171,8 +188,8 @@ export function getSuggestedQueries(context: AIQueryContext): string[] {
   const baseQueries = [
     "What were our total expenses last month?",
     "Show me spending by category",
+    "How much did we pay in taxes this year?",
     "Which items had the biggest price changes?",
-    "What's the current price of [item]?",
   ]
 
   if (context.canCompareOrgs) {
