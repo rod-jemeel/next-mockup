@@ -39,7 +39,7 @@ export function ListPagination({
   const hasNext = currentPage < totalPages
 
   return (
-    <div className="flex items-center justify-between border-t pt-4">
+    <div className="flex items-center justify-between">
       <p className="text-xs text-muted-foreground">
         Page {currentPage} of {totalPages} ({total} items)
       </p>
