@@ -420,16 +420,30 @@ export async function isDepartmentManager({
 
 /**
  * Get members by department IDs (for forwarding rule resolution)
+ * Verifies department ownership by org_id to prevent cross-tenant data leakage
  */
 export async function getMembersByDepartmentIds(
-  departmentIds: string[]
+  departmentIds: string[],
+  orgId: string
 ): Promise<string[]> {
   if (departmentIds.length === 0) return []
+
+  // First verify all departments belong to this org (prevents cross-tenant leakage)
+  const { data: validDepts, error: deptError } = await supabase
+    .from("departments")
+    .select("id")
+    .eq("org_id", orgId)
+    .in("id", departmentIds)
+
+  if (deptError) throw deptError
+
+  const validDeptIds = (validDepts || []).map((d) => d.id)
+  if (validDeptIds.length === 0) return []
 
   const { data, error } = await supabase
     .from("department_members")
     .select("user_id")
-    .in("department_id", departmentIds)
+    .in("department_id", validDeptIds)
 
   if (error) throw error
 
@@ -439,16 +453,23 @@ export async function getMembersByDepartmentIds(
 
 /**
  * Get user IDs by department member IDs (for forwarding rule resolution)
+ * Verifies member ownership through departments.org_id to prevent cross-tenant data leakage
  */
 export async function getUsersByDepartmentMemberIds(
-  memberIds: string[]
+  memberIds: string[],
+  orgId: string
 ): Promise<string[]> {
   if (memberIds.length === 0) return []
 
+  // Join through departments to verify org ownership (prevents cross-tenant leakage)
   const { data, error } = await supabase
     .from("department_members")
-    .select("user_id")
+    .select(`
+      user_id,
+      departments!inner(org_id)
+    `)
     .in("id", memberIds)
+    .eq("departments.org_id", orgId)
 
   if (error) throw error
 

@@ -203,14 +203,16 @@ async function getUsersForRule(
   }
 
   // 3. Get users by entire departments (NEW)
+  // Pass orgId to verify department ownership and prevent cross-tenant data leakage
   if (rule.notify_department_ids && rule.notify_department_ids.length > 0) {
-    const deptUserIds = await getMembersByDepartmentIds(rule.notify_department_ids)
+    const deptUserIds = await getMembersByDepartmentIds(rule.notify_department_ids, orgId)
     deptUserIds.forEach((id) => userIds.add(id))
   }
 
   // 4. Get users by specific department member IDs (NEW)
+  // Pass orgId to verify member ownership and prevent cross-tenant data leakage
   if (rule.notify_department_member_ids && rule.notify_department_member_ids.length > 0) {
-    const memberUserIds = await getUsersByDepartmentMemberIds(rule.notify_department_member_ids)
+    const memberUserIds = await getUsersByDepartmentMemberIds(rule.notify_department_member_ids, orgId)
     memberUserIds.forEach((id) => userIds.add(id))
   }
 
