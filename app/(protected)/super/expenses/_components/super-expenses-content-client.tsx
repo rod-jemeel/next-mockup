@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Building2, ArrowUpDown, ArrowUp, ArrowDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { useEntityDialog } from "@/lib/stores/dialog-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -65,8 +66,14 @@ export function SuperExpensesContentClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchValue, setSearchValue] = useState(search)
-  const [editingExpense, setEditingExpense] = useState<ExpenseWithOrg | null>(null)
-  const [deletingExpense, setDeletingExpense] = useState<ExpenseWithOrg | null>(null)
+  const {
+    editingEntity: editingExpense,
+    deletingEntity: deletingExpense,
+    openEdit: setEditingExpense,
+    openDelete: setDeletingExpense,
+    onEditOpenChange,
+    onDeleteOpenChange,
+  } = useEntityDialog<ExpenseWithOrg>("expense")
 
   const updateParams = useCallback((updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -289,14 +296,14 @@ export function SuperExpensesContentClient({
       <EditExpenseDialog
         expense={editingExpense}
         open={!!editingExpense}
-        onOpenChange={(open) => !open && setEditingExpense(null)}
+        onOpenChange={onEditOpenChange}
       />
 
       {/* Delete Dialog */}
       <DeleteExpenseDialog
         expense={deletingExpense}
         open={!!deletingExpense}
-        onOpenChange={(open) => !open && setDeletingExpense(null)}
+        onOpenChange={onDeleteOpenChange}
       />
     </div>
   )

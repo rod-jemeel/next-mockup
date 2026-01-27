@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Building2, ArrowUpDown, ArrowUp, ArrowDown, MoreHorizontal, Pencil, Trash2, Check, X } from "lucide-react"
+import { useEntityDialog } from "@/lib/stores/dialog-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,8 +68,14 @@ export function SuperEmailAccountsContentClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchValue, setSearchValue] = useState(search)
-  const [editingAccount, setEditingAccount] = useState<EmailIntegrationWithOrg | null>(null)
-  const [deletingAccount, setDeletingAccount] = useState<EmailIntegrationWithOrg | null>(null)
+  const {
+    editingEntity: editingAccount,
+    deletingEntity: deletingAccount,
+    openEdit: setEditingAccount,
+    openDelete: setDeletingAccount,
+    onEditOpenChange,
+    onDeleteOpenChange,
+  } = useEntityDialog<EmailIntegrationWithOrg>("email-account")
 
   const updateParams = useCallback((updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -299,14 +306,14 @@ export function SuperEmailAccountsContentClient({
       <EditEmailAccountDialog
         account={editingAccount}
         open={!!editingAccount}
-        onOpenChange={(open) => !open && setEditingAccount(null)}
+        onOpenChange={onEditOpenChange}
       />
 
       {/* Delete Dialog */}
       <DeleteEmailAccountDialog
         account={deletingAccount}
         open={!!deletingAccount}
-        onOpenChange={(open) => !open && setDeletingAccount(null)}
+        onOpenChange={onDeleteOpenChange}
       />
     </div>
   )

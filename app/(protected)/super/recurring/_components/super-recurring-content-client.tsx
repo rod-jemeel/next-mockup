@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Building2, ArrowUpDown, ArrowUp, ArrowDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { useEntityDialog } from "@/lib/stores/dialog-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,8 +68,14 @@ export function SuperRecurringContentClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchValue, setSearchValue] = useState(search)
-  const [editingTemplate, setEditingTemplate] = useState<RecurringTemplateWithOrg | null>(null)
-  const [deletingTemplate, setDeletingTemplate] = useState<RecurringTemplateWithOrg | null>(null)
+  const {
+    editingEntity: editingTemplate,
+    deletingEntity: deletingTemplate,
+    openEdit: setEditingTemplate,
+    openDelete: setDeletingTemplate,
+    onEditOpenChange,
+    onDeleteOpenChange,
+  } = useEntityDialog<RecurringTemplateWithOrg>("recurring")
 
   const updateParams = useCallback((updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -306,14 +313,14 @@ export function SuperRecurringContentClient({
       <EditRecurringDialog
         template={editingTemplate}
         open={!!editingTemplate}
-        onOpenChange={(open) => !open && setEditingTemplate(null)}
+        onOpenChange={onEditOpenChange}
       />
 
       {/* Delete Dialog */}
       <DeleteRecurringDialog
         template={deletingTemplate}
         open={!!deletingTemplate}
-        onOpenChange={(open) => !open && setDeletingTemplate(null)}
+        onOpenChange={onDeleteOpenChange}
       />
     </div>
   )

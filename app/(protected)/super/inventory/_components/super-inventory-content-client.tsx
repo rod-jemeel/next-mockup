@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Building2, ArrowUpDown, ArrowUp, ArrowDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { useEntityDialog } from "@/lib/stores/dialog-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,8 +68,14 @@ export function SuperInventoryContentClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchValue, setSearchValue] = useState(search)
-  const [editingItem, setEditingItem] = useState<ItemWithOrg | null>(null)
-  const [deletingItem, setDeletingItem] = useState<ItemWithOrg | null>(null)
+  const {
+    editingEntity: editingItem,
+    deletingEntity: deletingItem,
+    openEdit: setEditingItem,
+    openDelete: setDeletingItem,
+    onEditOpenChange,
+    onDeleteOpenChange,
+  } = useEntityDialog<ItemWithOrg>("inventory")
 
   const updateParams = useCallback((updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -271,14 +278,14 @@ export function SuperInventoryContentClient({
       <EditInventoryDialog
         item={editingItem}
         open={!!editingItem}
-        onOpenChange={(open) => !open && setEditingItem(null)}
+        onOpenChange={onEditOpenChange}
       />
 
       {/* Delete Dialog */}
       <DeleteInventoryDialog
         item={deletingItem}
         open={!!deletingItem}
-        onOpenChange={(open) => !open && setDeletingItem(null)}
+        onOpenChange={onDeleteOpenChange}
       />
     </div>
   )

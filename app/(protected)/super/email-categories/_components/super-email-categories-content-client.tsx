@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Building2, ArrowUpDown, ArrowUp, ArrowDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { useEntityDialog } from "@/lib/stores/dialog-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,8 +68,14 @@ export function SuperEmailCategoriesContentClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchValue, setSearchValue] = useState(search)
-  const [editingCategory, setEditingCategory] = useState<EmailCategoryWithOrg | null>(null)
-  const [deletingCategory, setDeletingCategory] = useState<EmailCategoryWithOrg | null>(null)
+  const {
+    editingEntity: editingCategory,
+    deletingEntity: deletingCategory,
+    openEdit: setEditingCategory,
+    openDelete: setDeletingCategory,
+    onEditOpenChange,
+    onDeleteOpenChange,
+  } = useEntityDialog<EmailCategoryWithOrg>("email-category")
 
   const updateParams = useCallback((updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -288,14 +295,14 @@ export function SuperEmailCategoriesContentClient({
       <EditEmailCategoryDialog
         category={editingCategory}
         open={!!editingCategory}
-        onOpenChange={(open) => !open && setEditingCategory(null)}
+        onOpenChange={onEditOpenChange}
       />
 
       {/* Delete Dialog */}
       <DeleteEmailCategoryDialog
         category={deletingCategory}
         open={!!deletingCategory}
-        onOpenChange={(open) => !open && setDeletingCategory(null)}
+        onOpenChange={onDeleteOpenChange}
       />
     </div>
   )

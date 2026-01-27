@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Building2, ArrowUpDown, ArrowUp, ArrowDown, MoreHorizontal, Pencil, Trash2, Bell, Mail, Check, X } from "lucide-react"
+import { useEntityDialog } from "@/lib/stores/dialog-store"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,8 +68,14 @@ export function SuperRulesContentClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchValue, setSearchValue] = useState(search)
-  const [editingRule, setEditingRule] = useState<ForwardingRuleWithOrg | null>(null)
-  const [deletingRule, setDeletingRule] = useState<ForwardingRuleWithOrg | null>(null)
+  const {
+    editingEntity: editingRule,
+    deletingEntity: deletingRule,
+    openEdit: setEditingRule,
+    openDelete: setDeletingRule,
+    onEditOpenChange,
+    onDeleteOpenChange,
+  } = useEntityDialog<ForwardingRuleWithOrg>("forwarding-rule")
 
   const updateParams = useCallback((updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -307,14 +314,14 @@ export function SuperRulesContentClient({
       <EditForwardingRuleDialog
         rule={editingRule}
         open={!!editingRule}
-        onOpenChange={(open) => !open && setEditingRule(null)}
+        onOpenChange={onEditOpenChange}
       />
 
       {/* Delete Dialog */}
       <DeleteForwardingRuleDialog
         rule={deletingRule}
         open={!!deletingRule}
-        onOpenChange={(open) => !open && setDeletingRule(null)}
+        onOpenChange={onDeleteOpenChange}
       />
     </div>
   )
