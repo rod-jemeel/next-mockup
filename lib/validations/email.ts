@@ -1,8 +1,7 @@
 import { z } from "zod"
 
-// Email category colors
-export const emailCategoryColors = ["blue", "green", "yellow", "red", "gray"] as const
-export type EmailCategoryColor = (typeof emailCategoryColors)[number]
+// Hex color validation regex
+const hexColorRegex = /^#[0-9a-fA-F]{6}$/
 
 // Email providers
 export const emailProviders = ["gmail", "outlook", "other"] as const
@@ -15,7 +14,7 @@ export const orgRoles = ["org_admin", "finance", "inventory", "viewer"] as const
 export const createEmailCategorySchema = z.object({
   name: z.string().min(1, "Name is required").max(50),
   description: z.string().max(200).optional(),
-  color: z.enum(emailCategoryColors).default("gray"),
+  color: z.string().regex(hexColorRegex, "Invalid hex color").optional().default("#6b7280"),
   keywords: z.array(z.string().max(50)).max(20).optional(),
   senderPatterns: z.array(z.string().max(100)).max(10).optional(),
 })
@@ -23,7 +22,7 @@ export const createEmailCategorySchema = z.object({
 export const updateEmailCategorySchema = z.object({
   name: z.string().min(1).max(50).optional(),
   description: z.string().max(200).nullable().optional(),
-  color: z.enum(emailCategoryColors).optional(),
+  color: z.string().regex(hexColorRegex, "Invalid hex color").optional(),
   keywords: z.array(z.string().max(50)).max(20).optional(),
   senderPatterns: z.array(z.string().max(100)).max(10).optional(),
   isActive: z.boolean().optional(),

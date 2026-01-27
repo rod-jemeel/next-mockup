@@ -15,13 +15,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   Field,
   FieldError,
   FieldGroup,
@@ -29,16 +22,7 @@ import {
   FieldDescription,
 } from "@/components/ui/field"
 import { Badge } from "@/components/ui/badge"
-import { emailCategoryColors } from "@/lib/validations/email"
 import type { EmailCategory } from "@/lib/server/services/email-categories"
-
-const colorOptions = [
-  { value: "blue", label: "Blue", className: "bg-blue-500" },
-  { value: "green", label: "Green", className: "bg-emerald-500" },
-  { value: "yellow", label: "Yellow", className: "bg-amber-500" },
-  { value: "red", label: "Red", className: "bg-red-500" },
-  { value: "gray", label: "Gray", className: "bg-gray-500" },
-]
 
 interface EditEmailCategoryDialogProps {
   category: EmailCategory
@@ -53,9 +37,7 @@ export function EditEmailCategoryDialog({ category, orgId }: EditEmailCategoryDi
 
   const [name, setName] = useState(category.name)
   const [description, setDescription] = useState(category.description || "")
-  const [color, setColor] = useState<(typeof emailCategoryColors)[number]>(
-    category.color as (typeof emailCategoryColors)[number]
-  )
+  const [color, setColor] = useState(category.color || "#6b7280")
   const [keywords, setKeywords] = useState<string[]>(category.keywords || [])
   const [keywordInput, setKeywordInput] = useState("")
   const [senderPatterns, setSenderPatterns] = useState<string[]>(category.sender_patterns || [])
@@ -154,22 +136,15 @@ export function EditEmailCategoryDialog({ category, orgId }: EditEmailCategoryDi
               </Field>
 
               <Field>
-                <FieldLabel>Color</FieldLabel>
-                <Select value={color} onValueChange={(v) => setColor(v as typeof color)}>
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {colorOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        <div className="flex items-center gap-2">
-                          <div className={`size-3 rounded-full ${opt.className}`} />
-                          {opt.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FieldLabel htmlFor="edit-color">Color</FieldLabel>
+                <Input
+                  id="edit-color"
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  disabled={isLoading}
+                  className="h-9 w-14 p-1"
+                />
               </Field>
             </div>
 
