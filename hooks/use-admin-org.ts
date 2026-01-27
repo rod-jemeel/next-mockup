@@ -1,39 +1,16 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-
-const STORAGE_KEY = "admin-last-org-id"
+import { useAdminOrgStore } from "@/lib/stores/admin-org-store"
 
 /**
  * Hook for managing selected organization in Admin Hub.
- * Persists selection to localStorage for cross-session memory.
+ * Thin wrapper around Zustand store for backwards compatibility.
  */
 export function useAdminOrg() {
-  const [selectedOrgId, setSelectedOrgId] = useState<string>("")
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      setSelectedOrgId(stored)
-    }
-    setIsLoaded(true)
-  }, [])
-
-  const selectOrg = useCallback((orgId: string) => {
-    setSelectedOrgId(orgId)
-    if (orgId) {
-      localStorage.setItem(STORAGE_KEY, orgId)
-    } else {
-      localStorage.removeItem(STORAGE_KEY)
-    }
-  }, [])
-
-  const clearOrg = useCallback(() => {
-    setSelectedOrgId("")
-    localStorage.removeItem(STORAGE_KEY)
-  }, [])
+  const selectedOrgId = useAdminOrgStore((s) => s.selectedOrgId)
+  const selectOrg = useAdminOrgStore((s) => s.selectOrg)
+  const clearOrg = useAdminOrgStore((s) => s.clearOrg)
+  const isLoaded = useAdminOrgStore((s) => s._hasHydrated)
 
   return {
     selectedOrgId,
